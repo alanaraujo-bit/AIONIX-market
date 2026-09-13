@@ -23,6 +23,8 @@ interface CartState {
   add: (p: Product, qty?: number) => void;
   setQuantity: (productId: string, qty: number) => void;
   remove: (productId: string) => void;
+  /** Puts a previously removed line back (undo). */
+  restore: (item: CartItem) => void;
   clear: () => void;
   /** Reconciles prices/stock with the authoritative server quote. */
   syncWithQuote: (quote: Quote) => void;
@@ -65,6 +67,8 @@ export const useCart = create<CartState>()(
               : s.items.map((i) => (i.productId === productId ? { ...i, quantity: Math.min(qty, i.stock, 99) } : i)),
         })),
       remove: (productId) => set((s) => ({ items: s.items.filter((i) => i.productId !== productId) })),
+      restore: (item) =>
+        set((s) => (s.items.some((i) => i.productId === item.productId) ? s : { items: [...s.items, item] })),
       clear: () => set({ items: [] }),
       replace: (items) => set({ items }),
       syncWithQuote: (quote) =>

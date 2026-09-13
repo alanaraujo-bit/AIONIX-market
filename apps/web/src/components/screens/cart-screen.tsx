@@ -17,33 +17,18 @@ import { haptic, toast } from "@/lib/toast";
 function CartRow({ item }: { item: CartItem }) {
   const setQuantity = useCart((s) => s.setQuantity);
   const remove = useCart((s) => s.remove);
-  const add = useCart((s) => s.add);
+  const restore = useCart((s) => s.restore);
   const controls = useAnimation();
 
   const removeWithUndo = () => {
     haptic([6, 20, 6]);
-    remove(item.productId);
-    toast(`${item.name} removido`, { description: "Toque em desfazer para recuperar" });
     const snapshot = item;
-    // Undo via re-adding the snapshot (quick native-style affordance).
-    setTimeout(() => {
-      const undo = document.querySelector<HTMLButtonElement>("[data-undo]");
-      undo?.addEventListener("click", () => {
-        add(
-          {
-            id: snapshot.productId,
-            slug: snapshot.slug,
-            name: snapshot.name,
-            imageUrl: snapshot.imageUrl,
-            blurDataUrl: snapshot.blurDataUrl,
-            unitLabel: snapshot.unitLabel,
-            finalPriceCents: snapshot.priceCents,
-            compareAtCents: snapshot.compareAtCents,
-            stock: snapshot.stock,
-          } as never,
-          snapshot.quantity,
-        );
-      });
+    remove(item.productId);
+    toast(`${item.name} removido`, {
+      action: {
+        label: "Desfazer",
+        onClick: () => restore(snapshot),
+      },
     });
   };
 

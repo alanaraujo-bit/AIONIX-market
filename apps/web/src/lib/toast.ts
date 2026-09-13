@@ -8,7 +8,7 @@ export interface ToastItem {
   message: string;
   tone: ToastTone;
   description?: string;
-  action?: { label: string; href: string };
+  action?: { label: string; href?: string; onClick?: () => void };
 }
 
 interface ToastState {

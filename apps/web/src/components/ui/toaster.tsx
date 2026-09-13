@@ -35,7 +35,7 @@ export function Toaster() {
               <p className="text-[14px] leading-snug font-semibold">{t.message}</p>
               {t.description && <p className="mt-0.5 text-[13px] leading-snug text-white/65">{t.description}</p>}
             </div>
-            {t.action && (
+            {t.action?.href && (
               <Link
                 href={t.action.href}
                 onClick={() => dismiss(t.id)}
@@ -43,6 +43,18 @@ export function Toaster() {
               >
                 {t.action.label}
               </Link>
+            )}
+            {t.action && !t.action.href && (
+              <button
+                type="button"
+                onClick={() => {
+                  t.action?.onClick?.();
+                  dismiss(t.id);
+                }}
+                className="shrink-0 self-center rounded-full bg-citrus px-3 py-1.5 text-[12.5px] font-bold text-ink"
+              >
+                {t.action.label}
+              </button>
             )}
           </motion.div>
         ))}

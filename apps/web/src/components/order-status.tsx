@@ -47,7 +47,7 @@ export function OrderTimeline({ status, events = [] }: { status: OrderStatus; ev
     <ol className="relative">
       {steps.map((s, i) => {
         const Icon = ICONS[s];
-        const done = cancelled ? s !== "cancelled" || true : i <= currentIndex;
+        const done = cancelled ? s !== "cancelled" : i <= currentIndex;
         const active = cancelled ? s === "cancelled" : i === currentIndex;
         const ev = eventFor(s);
         const isLast = i === steps.length - 1;
