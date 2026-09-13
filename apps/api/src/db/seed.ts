@@ -93,10 +93,12 @@ async function main() {
       blurDataUrl,
       active: true,
     };
+    // Re-runs never touch operational fields (stock/active): those belong to the admin.
+    const { stock: _stock, active: _active, ...catalogFields } = values;
     const [row] = await db
       .insert(schema.products)
       .values({ ...values, soldCount: Math.floor(Math.random() * 120) })
-      .onConflictDoUpdate({ target: schema.products.slug, set: values })
+      .onConflictDoUpdate({ target: schema.products.slug, set: catalogFields })
       .returning({ id: schema.products.id });
     productIdBySlug.set(slug, row!.id);
   }
