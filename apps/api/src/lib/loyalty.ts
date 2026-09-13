@@ -3,7 +3,7 @@ import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db, schema, type DB } from "../db/client";
 import { publish } from "./events";
 import { badRequest, conflict, notFound } from "./http";
-import { computeEarnedCoins, describeReward, voucherCode, type RewardSnapshot } from "./loyalty-rules";
+import { computeEarnedCoins, describeReward, isCounterVoucher, reversalCoins, voucherCode, type RewardSnapshot } from "./loyalty-rules";
 import { getLoyaltySettings } from "./settings";
 
 /**
@@ -305,13 +305,23 @@ export async function recordOrderCoins(tx: Tx, input: { userId: string; orderId:
     coins: input.coins,
     orderId: input.orderId,
     settledAt: settled ? new Date() : null,
+    // Coins settled at checkout are announced by the success screen; do not replay them as a celebration.
+    seenAt: settled ? new Date() : null,
   });
 }
 
 /** Immediate credit (signup bonus, admin adjustment). Positive or negative. */
 export async function creditCoins(userId: string, coins: number, type: "bonus" | "adjust", note: string | null) {
   if (coins === 0) return;
-  await db.insert(ce).values({ userId, type, status: "settled", coins, note, settledAt: new Date() });
+  await db.transaction(async (tx) => {
+    await lockUser(tx, userId);
+    if (coins < 0) {
+      const balance = await getBalance(userId, tx);
+      if (balance + coins < 0) throw conflict(`O cliente tem só ${balance} no saldo; não é possível remover ${-coins}`, "INSUFFICIENT_COINS");
+    }
+    // Debits are never celebrated; credits are shown on the shopper's next wallet visit.
+    await tx.insert(ce).values({ userId, type, status: "settled", coins, note, settledAt: new Date(), seenAt: coins < 0 ? new Date() : null });
+  });
   const balance = await getBalance(userId);
   publish({ type: "coins.credited", userId, coins, balance, orderId: null, number: null, note, at: new Date().toISOString() });
 }
@@ -334,12 +344,16 @@ export async function syncOrderLoyalty(
       .select()
       .from(ce)
       .where(and(eq(ce.orderId, order.id), eq(ce.type, "earn"), eq(ce.status, "settled")));
+    if (settled.length) await lockUser(tx, order.userId);
     for (const e of settled) {
+      // Never overdraw: coins already spent on rewards stay spent (the store absorbs the difference).
+      const take = reversalCoins(e.coins, await getBalance(order.userId, tx));
+      if (take <= 0) continue;
       await tx.insert(ce).values({
         userId: order.userId,
         type: "reversal",
         status: "settled",
-        coins: -e.coins,
+        coins: -take,
         orderId: order.id,
         note: "Pedido cancelado",
         seenAt: new Date(),
@@ -377,12 +391,19 @@ export async function syncOrderLoyalty(
 /** Admin: marks a counter-redeemed gift voucher as used (by id or code). */
 export async function useGiftVoucher(idOrCode: string) {
   const isId = /^[0-9a-f-]{36}$/i.test(idOrCode);
+  const match = isId ? eq(rd.id, idOrCode) : eq(rd.code, idOrCode.trim().toUpperCase());
+  const [row] = await db.select().from(rd).where(match);
+  if (!row) throw badRequest("Voucher não encontrado");
+  const snap = row.snapshot as RewardSnapshot;
+  // Discount/delivery/product vouchers are consumed by an order; marking them here would burn the coins.
+  if (!isCounterVoucher(snap)) throw badRequest(`Este código é de "${snap.name}" e só vale dentro de um pedido no app`);
+  if (row.status !== "available") throw badRequest("Este brinde já foi entregue ou cancelado");
   const [updated] = await db
     .update(rd)
     .set({ status: "used", usedAt: new Date() })
-    .where(and(isId ? eq(rd.id, idOrCode) : eq(rd.code, idOrCode.trim().toUpperCase()), eq(rd.status, "available")))
+    .where(and(eq(rd.id, row.id), eq(rd.status, "available")))
     .returning();
-  if (!updated) throw badRequest("Voucher não encontrado ou já utilizado");
+  if (!updated) throw badRequest("Este brinde já foi entregue ou cancelado");
   return serializeRedemption(updated);
 }
 

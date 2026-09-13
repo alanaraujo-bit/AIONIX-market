@@ -116,3 +116,13 @@ export function voucherCode(random: (n: number) => number = (n) => Math.floor(Ma
   const part = () => Array.from({ length: 4 }, () => CODE_ALPHABET[random(CODE_ALPHABET.length)]).join("");
   return `AX-${part()}-${part()}`;
 }
+
+/** Coins to take back when a settled order is cancelled: never more than the shopper still holds. */
+export function reversalCoins(earned: number, balance: number) {
+  return Math.max(0, Math.min(earned, balance));
+}
+
+/** Only counter gifts are redeemed by showing a code at the store; the rest are consumed by an order. */
+export function isCounterVoucher(r: Pick<RewardSnapshot, "type">) {
+  return r.type === "gift";
+}

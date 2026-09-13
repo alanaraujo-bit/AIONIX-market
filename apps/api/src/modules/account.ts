@@ -354,7 +354,8 @@ export const accountRoutes: FastifyPluginAsync = async (app) => {
       totalCents: order.totalCents,
       at: new Date().toISOString(),
     });
-    return reply.status(201).send({ order: serializeOrder(order) });
+    const coinsStatus = order.coinsEarned > 0 ? (loyalty.awardOn === "created" ? "settled" : "pending") : null;
+    return reply.status(201).send({ order: serializeOrder(order, { loyalty: { coinsStatus, redemption: null } }) });
   });
 
   app.post("/orders/:id/cancel", async (req) => {

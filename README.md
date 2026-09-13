@@ -44,6 +44,7 @@ pnpm turbo typecheck            # 4 pacotes
 pnpm turbo test                 # vitest — regras de preço (apps/api/src/lib/pricing.test.ts)
 node scripts/flow.mjs http://localhost:3000 out/            # E2E consumidor: login → carrinho → checkout → pedido
 ADMIN_PASSWORD=… node scripts/realtime-e2e.mjs http://localhost:3000 http://localhost:3001 out/   # pedido → admin avança → cliente vê via SSE
+node scripts/coins-e2e.mjs http://localhost:3000 out/coins   # moedas: resgate → voucher no carrinho → checkout → entrega → celebração (staging)
 node scripts/pwa-check.mjs https://aionix-market.vercel.app  # manifest, ícones, service worker, offline
 node scripts/shot.mjs <url> out.png [--desktop] [--login] [--scroll N]   # screenshot para QA visual
 ```
@@ -54,6 +55,7 @@ node scripts/shot.mjs <url> out.png [--desktop] [--login] [--scroll N]   # scree
 - **Auth** própria: argon2 + access JWT (15 min, cookie `ax_at`) + refresh opaco rotativo (30 d, cookie `ax_rt`, hash em `sessions`).
 - **Realtime**: SSE direto do Railway com ticket JWT de 90 s; o admin recebe `order.created`/`order.updated` (fila com som), o cliente acompanha o pedido sem recarregar.
 - **Mídia**: upload → sharp (rotate, trim contra o fundo detectado, WebP ≤1200px, placeholder blur) → S3 → `/api/media/<key>` com cache imutável.
+- **Moedas (fidelidade)**: ledger append-only `coin_entries` (saldo = soma das entradas liquidadas). Moedas do pedido nascem pendentes e liquidam no momento configurado (criado/confirmado/entregue); cancelamento anula ou estorna sem deixar saldo negativo. Prêmios configuráveis no painel `/fidelidade` viram vouchers com código; o servidor aplica o voucher na cotação e o reserva no checkout. Créditos disparam SSE `coins.credited` e a celebração no app (`/moedas`).
 - **PWA**: viewport travado, sem seleção/zoom/bounce, telas 100dvh com scroll apenas em containers internos, transições de pilha, service worker com fallback offline.
 
 Deploy é contínuo: push em `main` publica web/admin na Vercel e a API no Railway (Dockerfile em `apps/api`). Progresso e decisões em `PROGRESS.md`; bloqueios em `BLOCKERS.md`.

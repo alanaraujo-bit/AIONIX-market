@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { LoyaltySettings } from "@aionix/shared";
-import { applyReward, computeEarnedCoins, describeReward, rewardMinOrderCents, voucherCode, type RewardSnapshot } from "./loyalty-rules";
+import { applyReward, computeEarnedCoins, describeReward, isCounterVoucher, reversalCoins, rewardMinOrderCents, voucherCode, type RewardSnapshot } from "./loyalty-rules";
 
 vi.mock("../db/client", () => ({ db: {}, schema: {} }));
 vi.mock("./settings", () => ({ getSettings: vi.fn(), getLoyaltySettings: vi.fn() }));
@@ -157,5 +157,18 @@ describe("buildQuote with loyalty", () => {
     expect(q.rewardError).toMatch(/pausado/);
     expect(q.coinsToEarn).toBe(0);
     expect(q.totalCents).toBe(5990);
+  });
+});
+
+describe("ledger safety", () => {
+  it("cancelling a settled order takes back at most what the shopper still holds", () => {
+    expect(reversalCoins(187, 294)).toBe(187);
+    expect(reversalCoins(187, 40)).toBe(40);
+    expect(reversalCoins(187, 0)).toBe(0);
+    expect(reversalCoins(187, -5)).toBe(0);
+  });
+  it("only counter gifts can be marked as delivered by code", () => {
+    expect(isCounterVoucher({ type: "gift" })).toBe(true);
+    for (const type of ["discount_fixed", "discount_percent", "free_delivery", "product"] as const) expect(isCounterVoucher({ type })).toBe(false);
   });
 });
