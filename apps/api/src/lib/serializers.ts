@@ -14,6 +14,8 @@ export function serializeUser(u: UserRow): PublicUser {
     email: u.email,
     phone: u.phone,
     role: u.role,
+    clubMember: u.clubMember,
+    clubJoinedAt: u.clubJoinedAt ? u.clubJoinedAt.toISOString() : null,
     createdAt: u.createdAt.toISOString(),
   };
 }
@@ -68,6 +70,7 @@ export function serializeOrder(
       unitPriceCents: i.unitPriceCents,
       quantity: i.quantity,
       totalCents: i.totalCents,
+      viaClub: i.viaClub,
     })),
     events: extra.events
       ?.slice()

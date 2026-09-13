@@ -106,7 +106,7 @@ export function Switch({ checked, onChange, label, disabled }: { checked: boolea
   );
 }
 
-export function Badge({ children, tone = "neutral", className }: { children: React.ReactNode; tone?: "neutral" | "brand" | "sale" | "citrus" | "info" | "ink"; className?: string }) {
+export function Badge({ children, tone = "neutral", className }: { children: React.ReactNode; tone?: "neutral" | "brand" | "sale" | "citrus" | "info" | "ink" | "club"; className?: string }) {
   return (
     <span
       className={cn(
@@ -118,6 +118,7 @@ export function Badge({ children, tone = "neutral", className }: { children: Rea
           "bg-citrus-soft text-[#8a5a00]": tone === "citrus",
           "bg-info-soft text-info": tone === "info",
           "bg-ink text-white": tone === "ink",
+          "bg-club-soft text-club": tone === "club",
         },
         className,
       )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { formatBRL, productInputSchema, type ProductInput } from "@aionix/shared";
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Package, Plus, Search, Star, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Crown, Package, Plus, Search, Star, Trash2 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
@@ -26,6 +26,7 @@ interface FormState {
   categoryId: string;
   price: string;
   compareAt: string;
+  clubPrice: string;
   unit: string;
   unitLabel: string;
   stock: string;
@@ -36,7 +37,7 @@ interface FormState {
   tags: string;
 }
 
-const empty = (categoryId = ""): FormState => ({ name: "", description: "", brand: "", categoryId, price: "", compareAt: "", unit: "un", unitLabel: "", stock: "0", sku: "", imageUrl: null, active: true, featured: false, tags: "" });
+const empty = (categoryId = ""): FormState => ({ name: "", description: "", brand: "", categoryId, price: "", compareAt: "", clubPrice: "", unit: "un", unitLabel: "", stock: "0", sku: "", imageUrl: null, active: true, featured: false, tags: "" });
 const fromProduct = (p: AdminProduct): FormState => ({
   name: p.name,
   description: p.description,
@@ -44,6 +45,7 @@ const fromProduct = (p: AdminProduct): FormState => ({
   categoryId: p.categoryId,
   price: moneyInput(p.priceCents),
   compareAt: moneyInput(p.compareAtCents),
+  clubPrice: moneyInput(p.clubPriceCents),
   unit: p.unit,
   unitLabel: p.unitLabel,
   stock: String(p.stock),
@@ -76,6 +78,7 @@ function ProductForm({ product, onClose }: { product: AdminProduct | null; onClo
       categoryId: form.categoryId,
       priceCents: parseMoney(form.price),
       compareAtCents: form.compareAt ? parseMoney(form.compareAt) : null,
+      clubPriceCents: form.clubPrice ? parseMoney(form.clubPrice) : null,
       unit: form.unit,
       unitLabel: form.unitLabel,
       stock: Number(form.stock) || 0,
@@ -99,6 +102,8 @@ function ProductForm({ product, onClose }: { product: AdminProduct | null; onClo
   };
 
   const margin = form.compareAt && parseMoney(form.compareAt) > parseMoney(form.price) ? Math.round((1 - parseMoney(form.price) / parseMoney(form.compareAt)) * 100) : 0;
+  const clubOff = form.clubPrice && parseMoney(form.clubPrice) < parseMoney(form.price) ? Math.round((1 - parseMoney(form.clubPrice) / parseMoney(form.price)) * 100) : 0;
+  const clubInvalid = !!form.clubPrice && parseMoney(form.clubPrice) >= parseMoney(form.price);
 
   return (
     <Drawer open onClose={onClose} title={product ? "Editar produto" : "Novo produto"} footer={<><Button variant="outline" onClick={onClose}>Cancelar</Button><Button loading={save.isPending} onClick={submit}>{product ? "Salvar alterações" : "Criar produto"}</Button></>}>
@@ -118,6 +123,23 @@ function ProductForm({ product, onClose }: { product: AdminProduct | null; onClo
         <Input label="Preço de venda" prefix="R$" inputMode="decimal" value={form.price} onChange={(e) => set("price", e.target.value)} error={errors.priceCents} />
         <Input label="Preço 'de' (opcional)" prefix="R$" inputMode="decimal" value={form.compareAt} onChange={(e) => set("compareAt", e.target.value)} error={errors.compareAtCents} hint={margin ? `Exibe -${margin}% na vitrine` : undefined} />
         <Input label="Estoque" type="number" min={0} value={form.stock} onChange={(e) => set("stock", e.target.value)} error={errors.stock} />
+      </div>
+      <div className="mt-4 rounded-xl bg-club-soft/60 p-4 ring-1 ring-club/15">
+        <div className="mb-3 flex items-center gap-2">
+          <Badge tone="club"><Crown className="size-3" strokeWidth={2.6} /> Clube AIONIX</Badge>
+          <span className="text-[12.5px] text-muted">Preço exclusivo para membros. Todo mundo vê o preço, só membros pagam por ele.</span>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Input
+            label="Preço de clube (opcional)"
+            prefix="R$"
+            inputMode="decimal"
+            value={form.clubPrice}
+            onChange={(e) => set("clubPrice", e.target.value)}
+            error={errors.clubPriceCents ?? (clubInvalid ? "Deve ser menor que o preço de venda" : undefined)}
+            hint={clubOff ? `Membros economizam ${clubOff}% · ${formatBRL(parseMoney(form.price) - parseMoney(form.clubPrice))} por unidade` : "Deixe em branco para não oferecer"}
+          />
+        </div>
       </div>
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <Select label="Unidade" value={form.unit} onChange={(e) => set("unit", e.target.value)}>{UNITS.map((u) => <option key={u}>{u}</option>)}</Select>
@@ -251,6 +273,7 @@ export function ProductsScreen() {
                     <td className="tabular px-3 py-2.5 text-right">
                       <span className={cn("block font-bold", p.discountPercent > 0 && "text-sale")}>{formatBRL(p.finalPriceCents)}</span>
                       {p.discountPercent > 0 && <span className="block text-[11.5px] text-muted line-through">{formatBRL(p.compareAtCents ?? p.priceCents)}</span>}
+                      {p.clubPriceCents !== null && <span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-club-soft px-1.5 py-px text-[11px] font-bold text-club"><Crown className="size-2.5" strokeWidth={3} /> {formatBRL(p.clubPriceCents)}</span>}
                     </td>
                     <td className="px-3 py-2.5 text-right">
                       <StockCell value={p.stock} onCommit={(v) => patch.mutate({ id: p.id, body: { stock: v } })} />

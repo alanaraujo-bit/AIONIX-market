@@ -91,6 +91,9 @@ export const adminCatalogRoutes: FastifyPluginAsync = async (app) => {
     return {
       items: rows.map((r) => ({
         ...serializeProduct(r, promos, catById.get(r.categoryId)?.slug),
+        // Admin edits raw values even when a promotion currently overrides them for shoppers.
+        compareAtCents: r.compareAtCents,
+        clubPriceCents: r.clubPriceCents,
         categoryName: catById.get(r.categoryId)?.name ?? "—",
         soldCount: r.soldCount,
         updatedAt: r.updatedAt.toISOString(),
@@ -119,6 +122,7 @@ export const adminCatalogRoutes: FastifyPluginAsync = async (app) => {
         brand: input.brand || null,
         sku: input.sku || null,
         compareAtCents: input.compareAtCents ?? null,
+        clubPriceCents: input.clubPriceCents ?? null,
         imageUrl: input.imageUrl ?? null,
         blurDataUrl: await mediaBlurFor(input.imageUrl),
       })
@@ -140,6 +144,7 @@ export const adminCatalogRoutes: FastifyPluginAsync = async (app) => {
         brand: input.brand || null,
         sku: input.sku || null,
         compareAtCents: input.compareAtCents ?? null,
+        clubPriceCents: input.clubPriceCents ?? null,
         imageUrl: input.imageUrl ?? null,
         blurDataUrl: input.imageUrl === current.imageUrl ? current.blurDataUrl : await mediaBlurFor(input.imageUrl),
       })
@@ -154,12 +159,19 @@ export const adminCatalogRoutes: FastifyPluginAsync = async (app) => {
       z.object({
         stock: z.number().int().min(0).optional(),
         priceCents: z.number().int().min(1).optional(),
+        clubPriceCents: z.number().int().min(1).nullable().optional(),
         active: z.boolean().optional(),
         featured: z.boolean().optional(),
       }),
       req.body,
     );
     if (!Object.keys(patch).length) throw badRequest("Nada para atualizar");
+    if (patch.clubPriceCents != null) {
+      const [current] = await db.select({ priceCents: p.priceCents }).from(p).where(eq(p.id, id));
+      if (current && patch.clubPriceCents >= (patch.priceCents ?? current.priceCents)) {
+        throw badRequest("O preço de clube deve ser menor que o preço de venda");
+      }
+    }
     const [row] = await db.update(p).set(patch).where(eq(p.id, id)).returning();
     if (!row) throw notFound("Produto não encontrado");
     return { product: serializeProduct(row, await getActivePromotions()) };
@@ -427,6 +439,8 @@ export const adminCatalogRoutes: FastifyPluginAsync = async (app) => {
           email: u.email,
           phone: u.phone,
           createdAt: u.createdAt,
+          clubMember: u.clubMember,
+          clubJoinedAt: u.clubJoinedAt,
           orders: sql<number>`(select count(*)::int from ${o} where ${o.userId} = ${u.id})`,
           spentCents: sql<number>`(select coalesce(sum(${o.totalCents}), 0)::int from ${o} where ${o.userId} = ${u.id} and ${o.status} <> 'cancelled')`,
           lastOrderAt: sql<string | null>`(select max(${o.createdAt}) from ${o} where ${o.userId} = ${u.id})`,
@@ -438,7 +452,24 @@ export const adminCatalogRoutes: FastifyPluginAsync = async (app) => {
         .offset(offset),
       db.select({ total: sql<number>`count(*)::int` }).from(u).where(where),
     ]);
-    return { items: rows, total, page, pageSize };
+    const [{ members } = { members: 0 }] = await db
+      .select({ members: sql<number>`count(*)::int` })
+      .from(u)
+      .where(and(eq(u.role, "customer"), eq(u.clubMember, true)));
+    return { items: rows, total, page, pageSize, members };
+  });
+
+  app.patch("/customers/:id", async (req) => {
+    const { id } = req.params as { id: string };
+    const { clubMember } = parse(z.object({ clubMember: z.boolean() }), req.body);
+    const u = schema.users;
+    const [row] = await db
+      .update(u)
+      .set({ clubMember, clubJoinedAt: clubMember ? sql`coalesce(${u.clubJoinedAt}, now())` : u.clubJoinedAt })
+      .where(and(eq(u.id, id), eq(u.role, "customer")))
+      .returning({ id: u.id, clubMember: u.clubMember, clubJoinedAt: u.clubJoinedAt });
+    if (!row) throw notFound("Cliente não encontrado");
+    return { customer: row };
   });
 
   // ---- Settings --------------------------------------------------------

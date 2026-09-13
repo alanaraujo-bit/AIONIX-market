@@ -2,7 +2,7 @@
 
 import { formatBRL, PAYMENT_METHOD_LABEL, type Address, type CheckoutInput, type Order, type PaymentMethod } from "@aionix/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Banknote, Check, ChevronRight, Clock3, CreditCard, MapPin, Plus, QrCode, ShieldCheck } from "lucide-react";
+import { Banknote, Check, ChevronRight, Clock3, CreditCard, Crown, MapPin, Plus, QrCode, ShieldCheck } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -267,7 +267,8 @@ export function CheckoutScreen() {
             />
             <div className="mt-4 space-y-2 border-t border-line pt-3 text-[14px]">
               <div className="flex justify-between text-muted"><span>Subtotal</span><span className="tabular">{quote ? formatBRL(quote.subtotalCents) : "—"}</span></div>
-              {!!quote?.discountCents && <div className="flex justify-between text-sale"><span>Descontos</span><span className="tabular">− {formatBRL(quote.discountCents)}</span></div>}
+              {!!quote && quote.discountCents - quote.clubDiscountCents > 0 && <div className="flex justify-between text-sale"><span>Descontos</span><span className="tabular">− {formatBRL(quote.discountCents - quote.clubDiscountCents)}</span></div>}
+              {!!quote?.clubDiscountCents && <div className="flex justify-between font-semibold text-club"><span className="flex items-center gap-1.5"><Crown className="size-3.5 text-club-gold" strokeWidth={2.8} fill="currentColor" /> Preço de Clube</span><span className="tabular">− {formatBRL(quote.clubDiscountCents)}</span></div>}
               <div className="flex justify-between text-muted"><span>Entrega</span><span className={cn("tabular", quote?.deliveryFeeCents === 0 && "font-semibold text-brand-2")}>{quote ? (quote.deliveryFeeCents ? formatBRL(quote.deliveryFeeCents) : "Grátis") : "—"}</span></div>
               <div className="flex items-baseline justify-between pt-1"><span className="text-[15px] font-bold">Total</span><span className="tabular font-display text-[22px] font-bold tracking-[-0.02em]">{quote ? formatBRL(quote.totalCents) : "—"}</span></div>
             </div>

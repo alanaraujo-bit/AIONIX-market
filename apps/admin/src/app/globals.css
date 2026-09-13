@@ -19,6 +19,9 @@
   --color-sale-soft: #fde9e5;
   --color-info: #1f4f9c;
   --color-info-soft: #e3ecfa;
+  --color-club: #4a2d8f;
+  --color-club-soft: #efe9fb;
+  --color-club-gold: #d9a93f;
   --color-sidebar: #0f1a14;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;

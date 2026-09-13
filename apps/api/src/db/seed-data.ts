@@ -17,6 +17,8 @@ export interface SeedProduct {
   category: string;
   price: number; // BRL
   compareAt?: number;
+  /** Members-only price (BRL); must be below `price`. */
+  clubPrice?: number;
   unit?: "un" | "kg" | "g" | "l" | "ml" | "pct" | "cx";
   unitLabel: string;
   stock?: number;
@@ -48,7 +50,7 @@ const img = (group: keyof typeof seedImages, i: number) => (seedImages[group] as
 
 export const SEED_PRODUCTS: SeedProduct[] = [
   // ---- Hortifruti (fotos: Wikimedia Commons, ver seed-images.json) -----
-  { name: "Banana Prata", category: "hortifruti", price: 6.99, unit: "kg", unitLabel: "kg", stock: 120, featured: true, tags: ["fruta", "banana"], image: img("hortifruti", 0), description: "Bananas prata selecionadas, no ponto ideal para consumo. Vendidas por quilo." },
+  { name: "Banana Prata", category: "hortifruti", price: 6.99, clubPrice: 5.49, unit: "kg", unitLabel: "kg", stock: 120, featured: true, tags: ["fruta", "banana"], image: img("hortifruti", 0), description: "Bananas prata selecionadas, no ponto ideal para consumo. Vendidas por quilo." },
   { name: "Maçã Gala", category: "hortifruti", price: 9.9, unit: "kg", unitLabel: "kg", stock: 90, tags: ["fruta", "maçã"], image: img("hortifruti", 1) },
   { name: "Laranja Pera", category: "hortifruti", price: 4.49, compareAt: 5.49, unit: "kg", unitLabel: "kg", stock: 150, tags: ["fruta", "laranja", "suco"], image: img("hortifruti", 2) },
   { name: "Limão Tahiti", category: "hortifruti", price: 5.99, unit: "kg", unitLabel: "kg", stock: 80, tags: ["fruta", "limão"], image: img("hortifruti", 3) },
@@ -68,7 +70,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
 
   // ---- Açougue & ovos ---------------------------------------------------
   { name: "Ovos Brancos Grandes", category: "acougue", price: 12.9, compareAt: 14.9, unitLabel: "dúzia", stock: 90, featured: true, tags: ["ovos"], image: img("acougue", 0) },
-  { name: "Peito de Frango sem Osso", category: "acougue", price: 19.9, unit: "kg", unitLabel: "kg", stock: 70, tags: ["frango", "carne"], image: img("acougue", 1), description: "Filé de peito de frango resfriado, sem pele e sem osso. Ideal para grelhados e airfryer." },
+  { name: "Peito de Frango sem Osso", category: "acougue", price: 19.9, clubPrice: 16.9, unit: "kg", unitLabel: "kg", stock: 70, tags: ["frango", "carne"], image: img("acougue", 1), description: "Filé de peito de frango resfriado, sem pele e sem osso. Ideal para grelhados e airfryer." },
   { name: "Carne Moída de Primeira", category: "acougue", price: 34.9, compareAt: 39.9, unit: "kg", unitLabel: "kg", stock: 50, featured: true, tags: ["carne", "bovina"], image: img("acougue", 2), description: "Patinho moído na hora, magro e sem nervos." },
 
   // ---- Café & matinais ------------------------------------------------
@@ -79,8 +81,8 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   { name: "Café Gourmet Cerrado Mineiro 3 Corações", brand: "3 Corações", category: "cafe-matinais", price: 29.9, unitLabel: "250 g", stock: 22, featured: true, tags: ["café", "gourmet"], image: img("cafe", 4), description: "Grãos 100% arábica da região do Cerrado Mineiro, com notas de chocolate e caramelo." },
   { name: "Nescafé Original Extraforte Solúvel", brand: "Nescafé", category: "cafe-matinais", price: 12.9, unitLabel: "100 g", stock: 70, tags: ["café", "solúvel"], image: img("cafe", 5) },
   { name: "Cápsulas Illy Intenso Espresso", brand: "Illy", category: "cafe-matinais", price: 42.9, compareAt: 49.9, unitLabel: "10 cápsulas", stock: 18, tags: ["café", "cápsula"], image: img("cafe", 6) },
-  { name: "Dolce Gusto Mochaccino Canela", brand: "Nescafé", category: "cafe-matinais", price: 34.9, unitLabel: "10 cápsulas", stock: 25, tags: ["café", "cápsula"], image: img("cafe", 7) },
-  { name: "Aveia em Flocos Finos Nestlé", brand: "Nestlé", category: "cafe-matinais", price: 6.99, unitLabel: "170 g", stock: 80, tags: ["aveia", "cereal"], image: img("matinais", 0) },
+  { name: "Dolce Gusto Mochaccino Canela", brand: "Nescafé", category: "cafe-matinais", price: 34.9, clubPrice: 24.9, unitLabel: "10 cápsulas", stock: 25, tags: ["café", "cápsula"], image: img("cafe", 7) },
+  { name: "Aveia em Flocos Finos Nestlé", brand: "Nestlé", category: "cafe-matinais", price: 6.99, clubPrice: 4.99, unitLabel: "170 g", stock: 80, tags: ["aveia", "cereal"], image: img("matinais", 0) },
   { name: "Cereal Matinal Sucrilhos Kellogg's", brand: "Kellogg's", category: "cafe-matinais", price: 16.9, compareAt: 19.9, unitLabel: "510 g", stock: 40, tags: ["cereal"], image: img("matinais", 1) },
   { name: "Granola Integral Cereais Maltados Jasmine", brand: "Jasmine", category: "cafe-matinais", price: 24.9, unitLabel: "850 g", stock: 30, tags: ["granola"], image: img("matinais", 2) },
   { name: "Granola Cacau Mãe Terra", brand: "Mãe Terra", category: "cafe-matinais", price: 14.9, unitLabel: "250 g", stock: 35, tags: ["granola", "cacau"], image: img("matinais", 3) },
@@ -90,7 +92,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
 
   // ---- Laticínios -----------------------------------------------------
   { name: "Leite em Pó Integral Ninho", brand: "Nestlé", category: "laticinios", price: 26.9, compareAt: 29.9, unitLabel: "380 g", stock: 45, tags: ["leite"], image: img("laticinios", 0) },
-  { name: "Leite Integral Piracanjuba", brand: "Piracanjuba", category: "laticinios", price: 5.49, unitLabel: "1 L", stock: 200, featured: true, tags: ["leite"], image: img("laticinios", 1), description: "Leite UHT integral, fonte de cálcio e proteínas. Caixa com tampa." },
+  { name: "Leite Integral Piracanjuba", brand: "Piracanjuba", category: "laticinios", price: 5.49, clubPrice: 4.79, unitLabel: "1 L", stock: 200, featured: true, tags: ["leite"], image: img("laticinios", 1), description: "Leite UHT integral, fonte de cálcio e proteínas. Caixa com tampa." },
   { name: "Creme de Leite Piracanjuba", brand: "Piracanjuba", category: "laticinios", price: 3.29, unitLabel: "200 g", stock: 120, tags: ["creme de leite"], image: img("laticinios", 2) },
   { name: "Leite Condensado Moça", brand: "Nestlé", category: "laticinios", price: 7.49, unitLabel: "395 g", stock: 110, tags: ["leite condensado"], image: img("laticinios", 3) },
   { name: "Yakult Leite Fermentado", brand: "Yakult", category: "laticinios", price: 9.9, unitLabel: "6 × 80 g", stock: 50, tags: ["fermentado"], image: img("laticinios", 4) },
@@ -104,11 +106,11 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   { name: "Manteiga Extra com Sal Président", brand: "Président", category: "laticinios", price: 16.9, unitLabel: "200 g", stock: 36, tags: ["manteiga"], image: img("laticinios", 12) },
 
   // ---- Mercearia ------------------------------------------------------
-  { name: "Arroz Integral Camil", brand: "Camil", category: "mercearia", price: 7.99, unitLabel: "1 kg", stock: 100, tags: ["arroz", "integral"], image: img("mercearia", 0) },
+  { name: "Arroz Integral Camil", brand: "Camil", category: "mercearia", price: 7.99, clubPrice: 6.49, unitLabel: "1 kg", stock: 100, tags: ["arroz", "integral"], image: img("mercearia", 0) },
   { name: "Arroz Tio João 100 Grãos Nobres", brand: "Tio João", category: "mercearia", price: 8.49, compareAt: 9.49, unitLabel: "1 kg", stock: 140, featured: true, tags: ["arroz"], image: img("mercearia", 1) },
   { name: "Arroz Branco Tipo 1 Camil", brand: "Camil", category: "mercearia", price: 27.9, compareAt: 31.9, unitLabel: "5 kg", stock: 60, tags: ["arroz"], image: img("mercearia", 2) },
   { name: "Azeite Extra Virgem Andorinha", brand: "Andorinha", category: "mercearia", price: 39.9, compareAt: 46.9, unitLabel: "500 ml", stock: 42, featured: true, tags: ["azeite"], image: img("mercearia", 3), description: "Azeite português extra virgem com acidez máxima de 0,5%. Frutado, ideal para saladas e finalizações." },
-  { name: "Azeite Extra Virgem Clássico Gallo", brand: "Gallo", category: "mercearia", price: 37.9, unitLabel: "500 ml", stock: 38, tags: ["azeite"], image: img("mercearia", 4) },
+  { name: "Azeite Extra Virgem Clássico Gallo", brand: "Gallo", category: "mercearia", price: 37.9, clubPrice: 31.9, unitLabel: "500 ml", stock: 38, tags: ["azeite"], image: img("mercearia", 4) },
   { name: "Óleo de Soja Liza", brand: "Liza", category: "mercearia", price: 7.29, unitLabel: "900 ml", stock: 150, tags: ["óleo"], image: img("mercearia", 5) },
   { name: "Farinha de Mandioca Yoki", brand: "Yoki", category: "mercearia", price: 6.49, unitLabel: "500 g", stock: 70, tags: ["farinha"], image: img("mercearia", 6) },
   { name: "Farinha de Trigo Tradicional Bunge", brand: "Bunge", category: "mercearia", price: 5.99, unitLabel: "1 kg", stock: 90, tags: ["farinha"], image: img("mercearia", 7) },

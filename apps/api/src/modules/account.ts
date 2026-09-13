@@ -50,10 +50,28 @@ export const accountRoutes: FastifyPluginAsync = async (app) => {
         orders: sql<number>`count(*)::int`,
         spentCents: sql<number>`coalesce(sum(${o.totalCents}) filter (where ${o.status} <> 'cancelled'), 0)::int`,
         savedCents: sql<number>`coalesce(sum(${o.discountCents}) filter (where ${o.status} <> 'cancelled'), 0)::int`,
+        clubSavedCents: sql<number>`coalesce((
+          select sum((${schema.orderItems.originalUnitPriceCents} - ${schema.orderItems.unitPriceCents}) * ${schema.orderItems.quantity})
+          from ${schema.orderItems}
+          join ${o} as co on co.id = ${schema.orderItems.orderId}
+          where co.user_id = ${userId} and co.status <> 'cancelled' and ${schema.orderItems.viaClub}
+        ), 0)::int`,
       })
       .from(o)
       .where(eq(o.userId, userId));
     return { user: serializeUser(user), stats };
+  });
+
+  /** Free, one-tap club enrollment. Idempotent. */
+  app.post("/club/join", async (req) => {
+    const { userId } = requireUser(req);
+    const [user] = await db
+      .update(schema.users)
+      .set({ clubMember: true, clubJoinedAt: sql`coalesce(${schema.users.clubJoinedAt}, now())` })
+      .where(eq(schema.users.id, userId))
+      .returning();
+    if (!user) throw notFound();
+    return { user: serializeUser(user) };
   });
 
   app.patch("/", async (req) => {
@@ -213,7 +231,7 @@ export const accountRoutes: FastifyPluginAsync = async (app) => {
     const [address] = await db.select().from(a).where(and(eq(a.id, input.addressId), eq(a.userId, userId)));
     if (!address) throw badRequest("Selecione um endereço de entrega válido");
 
-    const quote = await quoteCart(input.items);
+    const quote = await quoteCart(input.items, { userId });
     if (quote.lines.length === 0) throw badRequest("Seu carrinho está vazio");
     const unavailable = quote.lines.filter((l) => !l.available);
     if (unavailable.length) {
@@ -276,6 +294,7 @@ export const accountRoutes: FastifyPluginAsync = async (app) => {
           unitLabel: l.unitLabel,
           unitPriceCents: l.unitPriceCents,
           originalUnitPriceCents: l.originalUnitPriceCents,
+          viaClub: l.viaClub,
           quantity: l.quantity,
           totalCents: l.totalCents,
         })),

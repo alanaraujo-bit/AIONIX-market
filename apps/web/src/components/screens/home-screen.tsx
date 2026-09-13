@@ -2,12 +2,13 @@
 
 import { formatBRL, type Address } from "@aionix/shared";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, Clock3, MapPin, Search, Truck } from "lucide-react";
+import { ChevronDown, ChevronRight, Clock3, Crown, MapPin, Search, Truck } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BannerCarousel, BannerSkeleton } from "@/components/banner-carousel";
 import { CartBar } from "@/components/cart-bar";
+import { ClubHero } from "@/components/club/club-hero";
 import { ProductGrid, ProductRail } from "@/components/product/product-card";
 import { Screen } from "@/components/ui/screen";
 import { SectionHeader, Skeleton, cn } from "@/components/ui/primitives";
@@ -201,6 +202,23 @@ export function HomeScreen({ initial }: { initial: HomeData | null }) {
                 </Link>
               </div>
               <ProductRail products={data?.deals} loading={loading} priority />
+            </section>
+          )}
+
+          {(loading || (data?.club?.length ?? 0) > 0) && (
+            <section>
+              <div className="mb-3 flex items-end justify-between px-5">
+                <h2 className="flex items-center gap-2 font-display text-[19px] font-bold tracking-[-0.025em]">
+                  <Crown className="size-[18px] text-club-gold" strokeWidth={2.6} fill="currentColor" /> Clube AIONIX
+                </h2>
+                <Link href="/clube" className="flex items-center text-[13px] font-semibold text-club">
+                  Ver tudo <ChevronRight className="size-4" />
+                </Link>
+              </div>
+              {loading ? <Skeleton className="mx-5 h-[196px] rounded-[26px]" /> : <ClubHero products={data?.club ?? []} />}
+              <div className="mt-3">
+                <ProductRail products={data?.club} loading={loading} />
+              </div>
             </section>
           )}
 

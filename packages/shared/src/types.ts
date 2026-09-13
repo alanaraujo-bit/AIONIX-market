@@ -8,6 +8,9 @@ export interface PublicUser {
   email: string;
   phone: string | null;
   role: Role;
+  /** Club membership unlocks the members-only price on products that have one. */
+  clubMember: boolean;
+  clubJoinedAt: string | null;
   createdAt: string;
 }
 
@@ -39,6 +42,13 @@ export interface Product {
   discountPercent: number;
   promotionId: string | null;
   promotionName: string | null;
+  /**
+   * Members-only price (public data — shown to everyone as the reason to join).
+   * Null when the product has no club price or it isn't lower than finalPriceCents.
+   * Catalog responses are cached and user-agnostic: whether it applies is decided
+   * client-side from the session, and server-side only in quote/checkout.
+   */
+  clubPriceCents: number | null;
   unit: string;
   unitLabel: string;
   stock: number;
@@ -88,12 +98,22 @@ export interface QuoteLine {
   totalCents: number;
   available: boolean;
   stock: number;
+  /** Members-only unit price, when the product has one. */
+  clubPriceCents: number | null;
+  /** True when unitPriceCents is the club price (caller is a member). */
+  viaClub: boolean;
 }
 
 export interface Quote {
   lines: QuoteLine[];
   subtotalCents: number;
+  /** Total savings vs list price (promotions + club). */
   discountCents: number;
+  /** Portion of discountCents that came from club prices. */
+  clubDiscountCents: number;
+  /** For non-members: how much the same cart would save with club prices. */
+  clubPotentialCents: number;
+  clubMember: boolean;
   deliveryFeeCents: number;
   totalCents: number;
   freeDeliveryThresholdCents: number;
@@ -110,6 +130,7 @@ export interface OrderItem {
   unitPriceCents: number;
   quantity: number;
   totalCents: number;
+  viaClub: boolean;
 }
 
 export interface OrderEvent {

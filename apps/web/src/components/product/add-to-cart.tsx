@@ -4,6 +4,7 @@ import type { Product } from "@aionix/shared";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCart, useCartQuantity, useHydrated } from "@/lib/cart";
+import { useEffectivePrice } from "@/lib/club";
 import { haptic, toast } from "@/lib/toast";
 import { cn } from "../ui/primitives";
 
@@ -13,6 +14,7 @@ export function AddToCart({ product, size = "md" }: { product: Product; size?: "
   const qty = useCartQuantity(product.id);
   const add = useCart((s) => s.add);
   const setQuantity = useCart((s) => s.setQuantity);
+  const price = useEffectivePrice(product);
   const quantity = hydrated ? qty : 0;
   const soldOut = product.stock <= 0;
   const h = size === "lg" ? "h-11" : "h-9";
@@ -32,7 +34,7 @@ export function AddToCart({ product, size = "md" }: { product: Product; size?: "
       return;
     }
     haptic();
-    if (quantity === 0) add(product, 1);
+    if (quantity === 0) add(product, 1, { cents: price.cents, compareAt: price.compareAt, viaClub: price.viaClub });
     else setQuantity(product.id, quantity + 1);
   };
   const dec = () => {

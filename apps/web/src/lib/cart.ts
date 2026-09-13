@@ -14,13 +14,16 @@ export interface CartItem {
   unitLabel: string;
   priceCents: number;
   compareAtCents: number | null;
+  /** Unit price came from the club price (member). */
+  viaClub: boolean;
   stock: number;
   quantity: number;
 }
 
 interface CartState {
   items: CartItem[];
-  add: (p: Product, qty?: number) => void;
+  /** `price` is the shopper's effective unit price (club-aware); defaults to the shelf price. */
+  add: (p: Product, qty?: number, price?: { cents: number; compareAt: number | null; viaClub: boolean }) => void;
   setQuantity: (productId: string, qty: number) => void;
   remove: (productId: string) => void;
   /** Puts a previously removed line back (undo). */
@@ -35,7 +38,7 @@ export const useCart = create<CartState>()(
   persist(
     (set) => ({
       items: [],
-      add: (p, qty = 1) =>
+      add: (p, qty = 1, price) =>
         set((s) => {
           const existing = s.items.find((i) => i.productId === p.id);
           if (existing) {
@@ -52,8 +55,9 @@ export const useCart = create<CartState>()(
             imageUrl: p.imageUrl,
             blurDataUrl: p.blurDataUrl,
             unitLabel: p.unitLabel,
-            priceCents: p.finalPriceCents,
-            compareAtCents: p.compareAtCents,
+            priceCents: price?.cents ?? p.finalPriceCents,
+            compareAtCents: price?.compareAt ?? p.compareAtCents,
+            viaClub: price?.viaClub ?? false,
             stock: p.stock,
             quantity: Math.min(qty, p.stock, 99),
           };
@@ -84,14 +88,20 @@ export const useCart = create<CartState>()(
             .map((i) => {
               const l = byId.get(i.productId)!;
               const compareAt = l.originalUnitPriceCents > l.unitPriceCents ? l.originalUnitPriceCents : i.compareAtCents;
-              if (l.unitPriceCents === i.priceCents && l.stock === i.stock) return i;
+              if (l.unitPriceCents === i.priceCents && l.stock === i.stock && l.viaClub === i.viaClub) return i;
               changed = true;
-              return { ...i, priceCents: l.unitPriceCents, compareAtCents: compareAt, stock: l.stock };
+              return { ...i, priceCents: l.unitPriceCents, compareAtCents: compareAt, stock: l.stock, viaClub: l.viaClub };
             });
           return changed ? { items } : s;
         }),
     }),
-    { name: "aionix-cart-v1", storage: createJSONStorage(() => localStorage), version: 1 },
+    {
+      name: "aionix-cart-v1",
+      storage: createJSONStorage(() => localStorage),
+      version: 2,
+      // v1 carts predate `viaClub`; the next quote sync fills it in.
+      migrate: (state) => ({ ...(state as CartState), items: ((state as CartState).items ?? []).map((i) => ({ ...i, viaClub: i.viaClub ?? false })) }),
+    },
   ),
 );
 

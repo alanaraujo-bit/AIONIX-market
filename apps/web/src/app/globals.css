@@ -17,6 +17,13 @@
   --color-citrus-soft: #fcf0d6;
   --color-sale: #e14b3b;
   --color-sale-soft: #fde9e5;
+  /* Clube AIONIX: deep plum + warm gold — premium, distinct from sale red and brand green. */
+  --color-club: #4a2d8f;
+  --color-club-2: #3a2273;
+  --color-club-3: #6a4bc4;
+  --color-club-soft: #efe9fb;
+  --color-club-gold: #e4b54a;
+  --color-club-gold-2: #f6d98a;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-bricolage), var(--font-inter), ui-sans-serif, sans-serif;
@@ -30,10 +37,32 @@
 
   --animate-shimmer: shimmer 1.6s linear infinite;
   --animate-pop: pop 0.35s var(--ease-spring);
+  --animate-sheen: sheen 3.2s var(--ease-out-expo) infinite;
+  --animate-twinkle: twinkle 2.4s ease-in-out infinite;
 
   @keyframes shimmer {
     to {
       background-position: -200% 0;
+    }
+  }
+  @keyframes sheen {
+    0% {
+      transform: translateX(-140%) skewX(-18deg);
+    }
+    45%,
+    100% {
+      transform: translateX(240%) skewX(-18deg);
+    }
+  }
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.8;
+      transform: scale(0.9) rotate(0deg);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.15) rotate(12deg);
     }
   }
   @keyframes pop {
@@ -157,6 +186,31 @@ button {
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Clube surfaces: plum gradient with a slow light sweep. */
+.club-surface {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgb(106 75 196 / 0.55) 0%, transparent 55%),
+    radial-gradient(80% 70% at 0% 100%, rgb(228 181 74 / 0.22) 0%, transparent 60%),
+    linear-gradient(150deg, #3a2273 0%, #4a2d8f 55%, #2c1a5c 100%);
+}
+.club-surface::before {
+  content: "";
+  position: absolute;
+  inset: -20% 0;
+  width: 38%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.16), transparent);
+  animation: var(--animate-sheen);
+}
+.club-gold-text {
+  background: linear-gradient(95deg, #f6d98a 0%, #e4b54a 45%, #f9e6a8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .line-clamp-2 {

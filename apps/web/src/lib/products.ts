@@ -9,6 +9,7 @@ export interface ProductQuery {
   q?: string;
   category?: string;
   onSale?: boolean;
+  club?: boolean;
   sort?: string;
 }
 
@@ -22,6 +23,7 @@ export function useInfiniteProducts(query: ProductQuery, enabled = true) {
       if (query.q) params.set("q", query.q);
       if (query.category) params.set("category", query.category);
       if (query.onSale) params.set("onSale", "1");
+      if (query.club) params.set("club", "1");
       if (query.sort) params.set("sort", query.sort);
       return api<ProductPage>(`/products?${params}`, { signal });
     },

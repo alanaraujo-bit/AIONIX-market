@@ -2,17 +2,19 @@
 
 import { formatBRL } from "@aionix/shared";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Minus, PackageX, Plus, Share2, ShoppingBag, Tag, Truck } from "lucide-react";
+import { Check, ChevronRight, Crown, Minus, PackageX, Plus, Share2, ShoppingBag, Tag, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Price } from "@/components/product/price";
+import { ClubBadge, Price } from "@/components/product/price";
+import { useClubSheet } from "@/components/club/club-sheet";
 import { ProductRail } from "@/components/product/product-card";
 import { ProductImage } from "@/components/product/product-image";
 import { Badge, Button, EmptyState, Pressable, Skeleton, cn } from "@/components/ui/primitives";
 import { BackButton, Screen } from "@/components/ui/screen";
 import { api } from "@/lib/api";
 import { cartCount, useCart, useCartQuantity, useHydrated } from "@/lib/cart";
+import { effectivePrice, useClub } from "@/lib/club";
 import { haptic, toast } from "@/lib/toast";
 import type { ProductDetail } from "@/lib/types";
 
@@ -68,6 +70,7 @@ export function ProductScreen({ slug, initial }: { slug: string; initial: Produc
   const setQuantity = useCart((s) => s.setQuantity);
   const [qty, setQty] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
+  const { member } = useClub();
 
   useEffect(() => {
     if (hydrated && inCart > 0) setQty(inCart);
@@ -93,11 +96,12 @@ export function ProductScreen({ slug, initial }: { slug: string; initial: Produc
   const p = data?.product;
   const soldOut = !!p && p.stock <= 0;
   const maxQty = p ? Math.min(p.stock, 99) : 1;
+  const price = p ? effectivePrice(p, member) : null;
   const cta = () => {
     if (!p) return;
     haptic([8, 30, 8]);
     if (inCart > 0) setQuantity(p.id, qty);
-    else add(p, qty);
+    else add(p, qty, price ? { cents: price.cents, compareAt: price.compareAt, viaClub: price.viaClub } : undefined);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1400);
     toast.success(inCart > 0 ? "Carrinho atualizado" : "Adicionado ao carrinho", {
@@ -131,7 +135,7 @@ export function ProductScreen({ slug, initial }: { slug: string; initial: Produc
             ) : (
               <motion.span key="cta" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex w-full items-center justify-between gap-3">
                 <span>{soldOut ? "Esgotado" : inCart > 0 ? "Atualizar" : "Adicionar"}</span>
-                {!soldOut && <span className="tabular font-display">{formatBRL(p.finalPriceCents * qty)}</span>}
+                {!soldOut && <span className="tabular font-display">{formatBRL((price?.cents ?? p.finalPriceCents) * qty)}</span>}
               </motion.span>
             )}
           </AnimatePresence>
@@ -160,8 +164,12 @@ export function ProductScreen({ slug, initial }: { slug: string; initial: Produc
           {p ? (
             <>
               <div className="flex flex-wrap items-center gap-2">
-                {p.discountPercent > 0 && <Badge tone="sale">-{p.discountPercent}%</Badge>}
-                {p.promotionName && (
+                {price?.viaClub ? (
+                  <ClubBadge label={`Preço de Clube · −${price.discountPercent}%`} />
+                ) : (
+                  p.discountPercent > 0 && <Badge tone="sale">-{p.discountPercent}%</Badge>
+                )}
+                {!price?.viaClub && p.promotionName && (
                   <Badge tone="citrus">
                     <Tag className="size-3" strokeWidth={2.6} /> {p.promotionName}
                   </Badge>
@@ -176,11 +184,52 @@ export function ProductScreen({ slug, initial }: { slug: string; initial: Produc
               <p className="mt-1 text-[14px] font-medium text-muted">
                 {[p.brand, p.unitLabel].filter(Boolean).join(" · ")}
               </p>
-              <Price cents={p.finalPriceCents} compareAt={p.compareAtCents} size="xl" className="mt-4" />
-              {p.compareAtCents && p.compareAtCents > p.finalPriceCents && (
-                <p className="mt-1 text-[13px] font-semibold text-brand-2">
-                  Você economiza {formatBRL(p.compareAtCents - p.finalPriceCents)} por unidade
-                </p>
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.div
+                  key={price?.viaClub ? "club" : "shelf"}
+                  initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                >
+                  <Price cents={price?.cents ?? p.finalPriceCents} compareAt={price?.compareAt} size="xl" tone={price?.viaClub ? "club" : "auto"} className="mt-4" />
+                  {price?.viaClub ? (
+                    <p className="mt-1 flex items-center gap-1.5 text-[13px] font-semibold text-club">
+                      <Crown className="size-3.5 text-club-gold" strokeWidth={2.8} fill="currentColor" />
+                      Seu preço de membro · você economiza {formatBRL((price.compareAt ?? p.priceCents) - price.cents)} por unidade
+                    </p>
+                  ) : (
+                    price?.compareAt &&
+                    price.compareAt > price.cents && (
+                      <p className="mt-1 text-[13px] font-semibold text-brand-2">Você economiza {formatBRL(price.compareAt - price.cents)} por unidade</p>
+                    )
+                  )}
+                </motion.div>
+              </AnimatePresence>
+
+              {price?.clubOffer !== null && price?.clubOffer !== undefined && (
+                <motion.button
+                  type="button"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => (haptic(), useClubSheet.getState().show(p))}
+                  className="club-surface grain mt-4 flex w-full items-center gap-3.5 rounded-[22px] p-4 text-left text-white"
+                >
+                  <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-white/12 ring-1 ring-white/20">
+                    <Crown className="size-5 text-club-gold-2 animate-twinkle" strokeWidth={2.4} fill="currentColor" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[11px] font-bold tracking-[0.1em] text-club-gold-2 uppercase">No Clube AIONIX</span>
+                    <span className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
+                      <span className="tabular font-display text-[22px] leading-none font-extrabold tracking-[-0.03em] whitespace-nowrap">{formatBRL(price.clubOffer)}</span>
+                      <span className="text-[12.5px] font-semibold whitespace-nowrap text-white/70">−{formatBRL(price.cents - price.clubOffer)}</span>
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-0.5 rounded-full bg-club-gold px-3 py-1.5 text-[12.5px] font-extrabold text-club-2">
+                    Entrar <ChevronRight className="size-3.5" strokeWidth={3} />
+                  </span>
+                </motion.button>
               )}
 
               <div className="mt-5 grid grid-cols-2 gap-3">

@@ -97,6 +97,8 @@ export interface Customer {
   orders: number;
   spentCents: number;
   lastOrderAt: string | null;
+  clubMember: boolean;
+  clubJoinedAt: string | null;
 }
 
 // ---- Hooks ------------------------------------------------------------------
@@ -143,7 +145,7 @@ export const useMedia = () =>
   useQuery({ queryKey: ["admin", "media"], queryFn: () => api<{ items: MediaItem[] }>("/admin/media"), select: (d) => d.items });
 
 export const useCustomers = (params: Record<string, string | number | undefined>) =>
-  useQuery({ queryKey: ["admin", "customers", params], queryFn: () => api<Paginated<Customer>>(`/admin/customers${qs(params)}`), placeholderData: keepPreviousData });
+  useQuery({ queryKey: ["admin", "customers", params], queryFn: () => api<Paginated<Customer> & { members: number }>(`/admin/customers${qs(params)}`), placeholderData: keepPreviousData });
 
 export const useSettings = () =>
   useQuery({ queryKey: ["admin", "settings"], queryFn: () => api<{ settings: StoreSettings }>("/admin/settings"), select: (d) => d.settings });

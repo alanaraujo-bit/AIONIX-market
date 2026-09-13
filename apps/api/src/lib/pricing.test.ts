@@ -25,6 +25,7 @@ const product = (over: Partial<Parameters<typeof buildQuote>[1][number]> = {}) =
   stock: 10,
   priceCents: 1000,
   compareAtCents: null,
+  clubPriceCents: null,
   ...over,
 });
 
@@ -139,5 +140,55 @@ describe("buildQuote", () => {
     const q = buildQuote(new Map(), [], [], settings);
     expect(q.minimumOrderCents).toBe(3000);
     expect(q.freeDeliveryThresholdCents).toBe(15000);
+  });
+});
+
+describe("club pricing", () => {
+  const clubProduct = (over = {}) => product({ clubPriceCents: 800, ...over });
+  const catPromo = (value: number) => promo({ id: "cat", categoryIds: new Set(["c1"]), discountValue: value });
+
+  it("advertises the club price to non-members without applying it", () => {
+    expect(priceProduct(clubProduct(), [])).toMatchObject({ finalPriceCents: 1000, clubPriceCents: 800, viaClub: false, discountPercent: 0 });
+  });
+  it("members pay the club price, struck against the list price", () => {
+    expect(priceProduct(clubProduct(), [], { clubMember: true })).toMatchObject({
+      finalPriceCents: 800,
+      compareAtCents: 1000,
+      discountPercent: 20,
+      viaClub: true,
+      promotionId: null,
+    });
+  });
+  it("a promotion that beats the club price wins for everyone and hides the club price", () => {
+    const r = priceProduct(clubProduct(), [catPromo(30)], { clubMember: true });
+    expect(r).toMatchObject({ finalPriceCents: 700, promotionId: "cat", viaClub: false, clubPriceCents: null });
+  });
+  it("members get min(promotion, club) when the club price is lower", () => {
+    const r = priceProduct(clubProduct(), [catPromo(10)], { clubMember: true });
+    expect(r).toMatchObject({ finalPriceCents: 800, viaClub: true, promotionId: null });
+    const guest = priceProduct(clubProduct(), [catPromo(10)]);
+    expect(guest).toMatchObject({ finalPriceCents: 900, promotionId: "cat", clubPriceCents: 800, viaClub: false });
+  });
+  it("ignores a club price that is not below the list price", () => {
+    expect(priceProduct(clubProduct({ clubPriceCents: 1000 }), [])).toMatchObject({ clubPriceCents: null });
+    expect(priceProduct(clubProduct({ clubPriceCents: 1200 }), [], { clubMember: true })).toMatchObject({ finalPriceCents: 1000, viaClub: false });
+  });
+  it("caps the club price at the maximum discount", () => {
+    expect(priceProduct(clubProduct({ clubPriceCents: 1 }), [], { clubMember: true }).finalPriceCents).toBe(100);
+  });
+  it("quotes club savings for members and the potential for guests", () => {
+    const items = mergeCartItems([{ productId: "p1", quantity: 2 }]);
+    const member = buildQuote(items, [clubProduct()], [], settings, { clubMember: true });
+    expect(member).toMatchObject({ discountCents: 400, clubDiscountCents: 400, clubPotentialCents: 0, clubMember: true });
+    expect(member.lines[0]).toMatchObject({ unitPriceCents: 800, viaClub: true, clubPriceCents: 800 });
+
+    const guest = buildQuote(items, [clubProduct()], [], settings);
+    expect(guest).toMatchObject({ discountCents: 0, clubDiscountCents: 0, clubPotentialCents: 400, clubMember: false });
+    expect(guest.lines[0]).toMatchObject({ unitPriceCents: 1000, viaClub: false, clubPriceCents: 800 });
+  });
+  it("club savings only count what the shelf promotion did not already give", () => {
+    const items = mergeCartItems([{ productId: "p1", quantity: 1 }]);
+    const q = buildQuote(items, [clubProduct()], [catPromo(10)], settings, { clubMember: true });
+    expect(q).toMatchObject({ discountCents: 200, clubDiscountCents: 100 });
   });
 });

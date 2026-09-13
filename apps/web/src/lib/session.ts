@@ -31,7 +31,7 @@ export function useAuthActions() {
     mutationFn: () => api("/auth/logout", { method: "POST" }),
     onSuccess: () => {
       qc.setQueryData(["session"], { user: null });
-      qc.removeQueries({ predicate: (q) => ["me", "orders", "order", "addresses"].includes(String(q.queryKey[0])) });
+      qc.removeQueries({ predicate: (q) => ["me", "orders", "order", "addresses", "quote"].includes(String(q.queryKey[0])) });
     },
   });
   return { login, register, logout };

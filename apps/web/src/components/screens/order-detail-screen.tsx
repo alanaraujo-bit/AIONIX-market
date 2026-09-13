@@ -39,7 +39,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
     mutationFn: async () => {
       const { items } = await api<{ items: { productId: string; quantity: number }[] }>(`/me/orders/${id}/reorder`);
       if (!items.length) throw new Error("Nenhum item deste pedido está disponível agora");
-      const quote = await api<{ lines: { productId: string; name: string; imageUrl: string | null; unitLabel: string; unitPriceCents: number; originalUnitPriceCents: number; stock: number; quantity: number }[] }>("/cart/quote", { body: { items } });
+      const quote = await api<{ lines: { productId: string; name: string; imageUrl: string | null; unitLabel: string; unitPriceCents: number; originalUnitPriceCents: number; stock: number; quantity: number; viaClub: boolean }[] }>("/cart/quote", { body: { items } });
       replace(
         quote.lines.map((l) => ({
           productId: l.productId,
@@ -50,6 +50,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
           unitLabel: l.unitLabel,
           priceCents: l.unitPriceCents,
           compareAtCents: l.originalUnitPriceCents > l.unitPriceCents ? l.originalUnitPriceCents : null,
+          viaClub: l.viaClub,
           stock: l.stock,
           quantity: l.quantity,
         })),

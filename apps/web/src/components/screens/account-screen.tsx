@@ -2,10 +2,11 @@
 
 import { formatBRL, formatPhone, profileSchema } from "@aionix/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, Leaf, LogOut, MapPin, Receipt, Sparkles, UserRound } from "lucide-react";
+import { ChevronRight, Crown, Leaf, LogOut, MapPin, Receipt, Sparkles, UserRound } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useClubSheet } from "@/components/club/club-sheet";
 import { Field, fieldErrors } from "@/components/ui/field";
 import { Button, Skeleton } from "@/components/ui/primitives";
 import { LargeTitle, Screen } from "@/components/ui/screen";
@@ -93,6 +94,62 @@ export function AccountScreen() {
           <button type="button" onClick={() => setEditing(true)} className="text-[13.5px] font-semibold text-brand-2">Editar</button>
         </motion.section>
 
+        {user?.clubMember ? (
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="club-surface grain rounded-[24px] p-4 text-white"
+          >
+            <Link href="/clube" className="flex items-center gap-3.5">
+              <span className="grid size-12 shrink-0 place-items-center rounded-[18px] bg-white/12 ring-1 ring-white/20">
+                <Crown className="size-6 text-club-gold-2 animate-twinkle" strokeWidth={2.4} fill="currentColor" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[11px] font-bold tracking-[0.12em] text-club-gold-2 uppercase">Membro do Clube</span>
+                <span className="mt-0.5 block font-display text-[17px] leading-tight font-bold tracking-[-0.02em]">
+                  {stats ? (
+                    stats.clubSavedCents > 0 ? (
+                      <>
+                        Economizou <span className="tabular club-gold-text">{formatBRL(stats.clubSavedCents)}</span> no Clube
+                      </>
+                    ) : (
+                      "Seus preços de membro estão ativos"
+                    )
+                  ) : (
+                    "Carregando…"
+                  )}
+                </span>
+                {user.clubJoinedAt && (
+                  <span className="mt-0.5 block text-[12px] text-white/65">
+                    Desde {new Date(user.clubJoinedAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                  </span>
+                )}
+              </span>
+              <ChevronRight className="size-5 shrink-0 text-white/60" />
+            </Link>
+          </motion.section>
+        ) : (
+          <motion.button
+            type="button"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            whileTap={{ scale: 0.985 }}
+            onClick={() => (haptic(), useClubSheet.getState().show())}
+            className="flex w-full items-center gap-3.5 rounded-[24px] bg-club-soft p-4 text-left ring-1 ring-club/10"
+          >
+            <span className="grid size-12 shrink-0 place-items-center rounded-[18px] bg-club text-club-gold-2">
+              <Crown className="size-6" strokeWidth={2.4} fill="currentColor" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-display text-[16px] leading-tight font-bold tracking-[-0.02em] text-club">Entre no Clube AIONIX</span>
+              <span className="mt-0.5 block text-[12.5px] text-club/70">Preço de membro em produtos selecionados. Grátis.</span>
+            </span>
+            <span className="shrink-0 rounded-full bg-club px-3 py-1.5 text-[12px] font-extrabold text-white">Entrar</span>
+          </motion.button>
+        )}
+
         <section className="grid grid-cols-3 gap-3">
           {[
             { label: "Pedidos", value: stats ? String(stats.orders) : null },
@@ -111,6 +168,7 @@ export function AccountScreen() {
             { href: "/pedidos", icon: Receipt, label: "Meus pedidos", sub: "Histórico e acompanhamento" },
             { href: "/conta/enderecos", icon: MapPin, label: "Endereços", sub: "Gerencie locais de entrega" },
             { href: "/ofertas", icon: Sparkles, label: "Ofertas do dia", sub: "Promoções ativas agora" },
+            { href: "/clube", icon: Crown, label: "Clube AIONIX", sub: user?.clubMember ? "Seus preços de membro" : "Preço de membro, sem mensalidade" },
           ].map((item, i) => (
             <Link key={item.href} href={item.href} className={`flex items-center gap-3.5 px-4 py-3.5 active:bg-line-2/60 ${i > 0 ? "border-t border-line-2" : ""}`}>
               <span className="grid size-10 place-items-center rounded-2xl bg-brand-soft text-brand">

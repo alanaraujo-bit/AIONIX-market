@@ -55,6 +55,7 @@ interface PriceableProduct {
   categoryId: string;
   priceCents: number;
   compareAtCents: number | null;
+  clubPriceCents: number | null;
 }
 
 export interface PriceResult {
@@ -63,6 +64,14 @@ export interface PriceResult {
   discountPercent: number;
   promotionId: string | null;
   promotionName: string | null;
+  clubPriceCents: number | null;
+  /** True when finalPriceCents is the club price (only possible for members). */
+  viaClub: boolean;
+}
+
+export interface PriceOptions {
+  /** Applies the club price when it beats promotions. Never set from cached catalog routes. */
+  clubMember?: boolean;
 }
 
 /** Maximum effective discount, whatever the campaign type (mirrors the 90% cap in `promotionInputSchema`). */
@@ -74,21 +83,49 @@ export function applyDiscount(price: number, type: "percent" | "fixed", value: n
   return Math.max(floor, discounted);
 }
 
-/** Picks the promotion that yields the lowest price for a product. */
-export function priceProduct(p: PriceableProduct, promos: ActivePromotion[]): PriceResult {
+/** Club price with the same floor promotions get; null unless strictly below list price. */
+export function effectiveClubPrice(p: Pick<PriceableProduct, "priceCents" | "clubPriceCents">) {
+  if (!p.clubPriceCents || p.clubPriceCents >= p.priceCents) return null;
+  return Math.max(Math.max(1, Math.ceil(p.priceCents * (1 - MAX_DISCOUNT_RATIO))), p.clubPriceCents);
+}
+
+/**
+ * Picks the promotion that yields the lowest price for a product. Members pay
+ * min(promotion, club price); everyone else pays the promotion price, but the
+ * club price is still exposed so the storefront can advertise it.
+ */
+export function priceProduct(p: PriceableProduct, promos: ActivePromotion[], opts: PriceOptions = {}): PriceResult {
   let best: { price: number; promo: ActivePromotion } | null = null;
   for (const promo of promos) {
     if (!promo.productIds.has(p.id) && !promo.categoryIds.has(p.categoryId)) continue;
     const price = applyDiscount(p.priceCents, promo.discountType, promo.discountValue);
     if (!best || price < best.price) best = { price, promo };
   }
-  if (best && best.price < p.priceCents) {
+  const promoPrice = best && best.price < p.priceCents ? best.price : null;
+  const club = effectiveClubPrice(p);
+  // Only advertise the club price when it actually beats what the shelf already offers.
+  const clubPriceCents = club !== null && club < (promoPrice ?? p.priceCents) ? club : null;
+
+  if (opts.clubMember && clubPriceCents !== null) {
     return {
-      finalPriceCents: best.price,
+      finalPriceCents: clubPriceCents,
       compareAtCents: p.priceCents,
-      discountPercent: Math.round(((p.priceCents - best.price) / p.priceCents) * 100),
-      promotionId: best.promo.id,
-      promotionName: best.promo.name,
+      discountPercent: Math.round(((p.priceCents - clubPriceCents) / p.priceCents) * 100),
+      promotionId: null,
+      promotionName: null,
+      clubPriceCents,
+      viaClub: true,
+    };
+  }
+  if (promoPrice !== null) {
+    return {
+      finalPriceCents: promoPrice,
+      compareAtCents: p.priceCents,
+      discountPercent: Math.round(((p.priceCents - promoPrice) / p.priceCents) * 100),
+      promotionId: best!.promo.id,
+      promotionName: best!.promo.name,
+      clubPriceCents,
+      viaClub: false,
     };
   }
   const compareAt = p.compareAtCents && p.compareAtCents > p.priceCents ? p.compareAtCents : null;
@@ -98,6 +135,8 @@ export function priceProduct(p: PriceableProduct, promos: ActivePromotion[]): Pr
     discountPercent: compareAt ? Math.round(((compareAt - p.priceCents) / compareAt) * 100) : 0,
     promotionId: null,
     promotionName: null,
+    clubPriceCents,
+    viaClub: false,
   };
 }
 
@@ -146,12 +185,22 @@ export function mergeCartItems(items: { productId: string; quantity: number }[])
 type QuotableProduct = PriceableProduct & Pick<ProductRow, "name" | "imageUrl" | "unitLabel" | "stock">;
 type QuoteSettings = Pick<StoreSettings, "deliveryFeeCents" | "freeDeliveryThresholdCents" | "minimumOrderCents">;
 
+/** Whether a user (by id) currently gets club prices. Anonymous callers never do. */
+export async function isClubMember(userId: string | null | undefined): Promise<boolean> {
+  if (!userId) return false;
+  const [row] = await db.select({ clubMember: schema.users.clubMember }).from(schema.users).where(eq(schema.users.id, userId));
+  return row?.clubMember ?? false;
+}
+
 /** Authoritative cart pricing. Unknown/inactive products are dropped. */
-export async function quoteCart(items: { productId: string; quantity: number }[]): Promise<PricedQuote> {
-  const settings = await getSettings();
+export async function quoteCart(
+  items: { productId: string; quantity: number }[],
+  opts: { userId?: string | null } = {},
+): Promise<PricedQuote> {
   const merged = mergeCartItems(items);
   const ids = [...merged.keys()];
-  const [rows, promos] = await Promise.all([
+  const [settings, rows, promos, clubMember] = await Promise.all([
+    getSettings(),
     ids.length
       ? db
           .select()
@@ -159,24 +208,36 @@ export async function quoteCart(items: { productId: string; quantity: number }[]
           .where(and(inArray(schema.products.id, ids), eq(schema.products.active, true)))
       : Promise.resolve([] as ProductRow[]),
     getActivePromotions(),
+    isClubMember(opts.userId),
   ]);
-  return buildQuote(merged, rows, promos, settings);
+  return buildQuote(merged, rows, promos, settings, { clubMember });
 }
 
-/** Pure quote math: subtotal at list price, discount from promotions, delivery fee from settings. */
+/** Pure quote math: subtotal at list price, discount from promotions/club, delivery fee from settings. */
 export function buildQuote(
   merged: Map<string, number>,
   rows: QuotableProduct[],
   promos: ActivePromotion[],
   settings: QuoteSettings,
+  opts: PriceOptions = {},
 ): PricedQuote {
   const byId = new Map(rows.map((r) => [r.id, r]));
+  const clubMember = !!opts.clubMember;
 
   const lines: PricedLine[] = [];
+  let clubDiscountCents = 0;
+  let clubPotentialCents = 0;
   for (const [productId, quantity] of merged) {
     const row = byId.get(productId);
     if (!row) continue;
-    const price = priceProduct(row, promos);
+    const price = priceProduct(row, promos, opts);
+    if (price.viaClub) {
+      // What the member saved beyond what the shelf already offered.
+      const shelf = priceProduct(row, promos).finalPriceCents;
+      clubDiscountCents += (shelf - price.finalPriceCents) * quantity;
+    } else if (price.clubPriceCents !== null) {
+      clubPotentialCents += (price.finalPriceCents - price.clubPriceCents) * quantity;
+    }
     lines.push({
       productId,
       name: row.name,
@@ -189,6 +250,8 @@ export function buildQuote(
       available: row.stock >= quantity,
       stock: row.stock,
       promotionId: price.promotionId,
+      clubPriceCents: price.clubPriceCents,
+      viaClub: price.viaClub,
     });
   }
 
@@ -202,6 +265,9 @@ export function buildQuote(
     lines,
     subtotalCents,
     discountCents,
+    clubDiscountCents,
+    clubPotentialCents,
+    clubMember,
     deliveryFeeCents,
     totalCents: net + deliveryFeeCents,
     freeDeliveryThresholdCents: settings.freeDeliveryThresholdCents,

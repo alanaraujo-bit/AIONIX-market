@@ -1,5 +1,5 @@
 import { quoteSchema, type Banner, type Category } from "@aionix/shared";
-import { and, asc, desc, eq, gt, gte, inArray, isNull, lte, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, ne, or, sql, type SQL } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import { db, schema } from "../db/client";
 import { ACCENT_FROM, ACCENT_TO, foldAccents, notFound, pageParams, parse, str } from "../lib/http";
@@ -15,6 +15,11 @@ function onSaleCondition(promos: ActivePromotion[]): SQL {
   if (productIds.length) conds.push(inArray(p.id, productIds));
   if (categoryIds.length) conds.push(inArray(p.categoryId, categoryIds));
   return or(...conds)!;
+}
+
+/** Products carrying a members-only price below the list price. */
+function clubCondition(): SQL {
+  return and(isNotNull(p.clubPriceCents), lt(p.clubPriceCents, p.priceCents))!;
 }
 
 async function categorySlugMap() {
@@ -81,10 +86,11 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
       categorySlugMap(),
     ]);
     const baseWhere = and(eq(p.active, true), gt(p.stock, 0));
-    const [featured, deals, best] = await Promise.all([
+    const [featured, deals, best, club] = await Promise.all([
       db.select().from(p).where(and(baseWhere, eq(p.featured, true))).orderBy(desc(p.soldCount)).limit(12),
       db.select().from(p).where(and(baseWhere, onSaleCondition(promos))).orderBy(desc(p.soldCount)).limit(16),
       db.select().from(p).where(baseWhere).orderBy(desc(p.soldCount)).limit(12),
+      db.select().from(p).where(and(baseWhere, clubCondition())).orderBy(desc(p.soldCount)).limit(12),
     ]);
     const ser = (rows: (typeof p.$inferSelect)[]) => rows.map((r) => serializeProduct(r, promos, slugs.get(r.categoryId)));
     const dealsSer = ser(deals).sort((a, b) => b.discountPercent - a.discountPercent);
@@ -111,6 +117,7 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
       featured: ser(featured),
       deals: dealsSer,
       bestSellers: ser(best),
+      club: ser(club).filter((x) => x.clubPriceCents !== null),
     };
   });
 
@@ -144,6 +151,7 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
       );
     }
     if (q.onSale === "1" || q.onSale === "true") conds.push(onSaleCondition(promos));
+    if (q.club === "1" || q.club === "true") conds.push(clubCondition());
     if (q.exclude) conds.push(ne(p.id, q.exclude));
 
     const order = (() => {
@@ -212,6 +220,6 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
 
   app.post("/cart/quote", async (req) => {
     const { items } = parse(quoteSchema, req.body);
-    return quoteCart(items);
+    return quoteCart(items, { userId: req.auth?.userId });
   });
 };

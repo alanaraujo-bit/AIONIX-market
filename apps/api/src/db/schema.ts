@@ -42,6 +42,8 @@ export const users = pgTable(
     phone: text("phone"),
     passwordHash: text("password_hash").notNull(),
     role: roleEnum("role").notNull().default("customer"),
+    clubMember: boolean("club_member").notNull().default(false),
+    clubJoinedAt: timestamp("club_joined_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -116,6 +118,8 @@ export const products = pgTable(
       .references(() => categories.id, { onDelete: "restrict" }),
     priceCents: integer("price_cents").notNull(),
     compareAtCents: integer("compare_at_cents"),
+    /** Members-only price; only takes effect when below priceCents. */
+    clubPriceCents: integer("club_price_cents"),
     unit: text("unit").notNull().default("un"),
     unitLabel: text("unit_label").notNull().default(""),
     stock: integer("stock").notNull().default(0),
@@ -242,6 +246,8 @@ export const orderItems = pgTable(
     originalUnitPriceCents: integer("original_unit_price_cents").notNull(),
     quantity: integer("quantity").notNull(),
     totalCents: integer("total_cents").notNull(),
+    /** True when the unit price came from the club price rather than a promotion. */
+    viaClub: boolean("via_club").notNull().default(false),
   },
   (t) => [index("order_items_order_idx").on(t.orderId), index("order_items_promo_idx").on(t.promotionId)],
 );

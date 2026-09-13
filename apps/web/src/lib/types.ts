@@ -16,6 +16,7 @@ export interface HomeData {
   featured: Product[];
   deals: Product[];
   bestSellers: Product[];
+  club: Product[];
 }
 
 export interface ProductDetail {
@@ -32,7 +33,7 @@ export interface OrderListItem extends Order {
 
 export interface MeData {
   user: PublicUser;
-  stats: { orders: number; spentCents: number; savedCents: number };
+  stats: { orders: number; spentCents: number; savedCents: number; clubSavedCents: number };
 }
 
 export type { Address, Banner, Category, Order, Product };

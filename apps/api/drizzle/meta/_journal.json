@@ -15,6 +15,13 @@
       "when": 1789276000000,
       "tag": "0001_relative_media_urls",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789314699406,
+      "tag": "0002_club",
+      "breakpoints": true
     }
   ]
 }

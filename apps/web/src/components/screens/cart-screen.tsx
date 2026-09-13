@@ -1,16 +1,18 @@
 "use client";
 
 import { formatBRL } from "@aionix/shared";
-import { ArrowRight, Minus, Plus, ShoppingBag, Sparkles, Trash2, Truck } from "lucide-react";
+import { ArrowRight, ChevronRight, Crown, Minus, Plus, ShoppingBag, Sparkles, Trash2, Truck } from "lucide-react";
 import { AnimatePresence, motion, useAnimation, type PanInfo } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useClubSheet } from "@/components/club/club-sheet";
 import { Price } from "@/components/product/price";
 import { ProductImage } from "@/components/product/product-image";
 import { Button, EmptyState, Pressable, Skeleton, cn } from "@/components/ui/primitives";
 import { LargeTitle, Screen } from "@/components/ui/screen";
 import { cartCount, cartSavings, cartTotal, useCart, useHydrated, type CartItem } from "@/lib/cart";
 import { useCartQuote } from "@/lib/quote";
+import { useClub } from "@/lib/club";
 import { useSession } from "@/lib/session";
 import { haptic, toast } from "@/lib/toast";
 
@@ -70,7 +72,14 @@ function CartRow({ item }: { item: CartItem }) {
             <p className="mt-0.5 text-[12px] font-medium text-muted">{item.unitLabel}</p>
           </div>
           <div className="mt-1.5 flex items-end justify-between gap-2">
-            <Price cents={item.priceCents * item.quantity} compareAt={item.compareAtCents ? item.compareAtCents * item.quantity : null} size="sm" />
+            <div>
+              <Price cents={item.priceCents * item.quantity} compareAt={item.compareAtCents ? item.compareAtCents * item.quantity : null} size="sm" tone={item.viaClub ? "club" : "auto"} />
+              {item.viaClub && (
+                <span className="mt-0.5 inline-flex items-center gap-1 text-[10.5px] font-bold tracking-[0.06em] text-club uppercase">
+                  <Crown className="size-3 text-club-gold" strokeWidth={2.8} fill="currentColor" /> Preço de Clube
+                </span>
+              )}
+            </div>
             <div className="flex h-9 items-center rounded-full bg-canvas ring-1 ring-line">
               <Pressable
                 aria-label="Diminuir"
@@ -100,14 +109,14 @@ function CartRow({ item }: { item: CartItem }) {
   );
 }
 
-function Row({ label, value, tone, loading }: { label: string; value: string; tone?: "sale" | "brand"; loading?: boolean }) {
+function Row({ label, value, tone, loading }: { label: string; value: string; tone?: "sale" | "brand" | "club"; loading?: boolean }) {
   return (
     <div className="flex items-center justify-between text-[14px]">
       <span className="font-medium text-muted">{label}</span>
       {loading ? (
         <Skeleton className="h-4 w-16" />
       ) : (
-        <span className={cn("tabular font-semibold", tone === "sale" ? "text-sale" : tone === "brand" ? "text-brand-2" : "text-ink")}>{value}</span>
+        <span className={cn("tabular font-semibold", tone === "sale" ? "text-sale" : tone === "brand" ? "text-brand-2" : tone === "club" ? "text-club" : "text-ink")}>{value}</span>
       )}
     </div>
   );
@@ -119,10 +128,13 @@ export function CartScreen() {
   const items = useCart((s) => s.items);
   const clear = useCart((s) => s.clear);
   const { user } = useSession();
+  const { member } = useClub();
   const { quote, loading } = useCartQuote();
   const count = cartCount(items);
   const localTotal = cartTotal(items);
   const savings = quote ? quote.discountCents : cartSavings(items);
+  const clubSavings = quote?.clubDiscountCents ?? 0;
+  const clubPotential = !member ? (quote?.clubPotentialCents ?? 0) : 0;
 
   if (!hydrated) {
     return (
@@ -225,9 +237,36 @@ export function CartScreen() {
           </div>
         )}
 
+        <AnimatePresence initial={false}>
+          {clubPotential > 0 && (
+            <motion.button
+              key="club-nudge"
+              type="button"
+              initial={{ opacity: 0, y: 10, height: 0, marginTop: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto", marginTop: 12 }}
+              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+              whileTap={{ scale: 0.985 }}
+              onClick={() => (haptic(), useClubSheet.getState().show())}
+              className="club-surface grain flex w-full items-center gap-3.5 overflow-hidden rounded-[22px] p-4 text-left text-white"
+            >
+              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-white/12 ring-1 ring-white/20">
+                <Crown className="size-5 text-club-gold-2 animate-twinkle" strokeWidth={2.4} fill="currentColor" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[14.5px] leading-tight font-bold">
+                  Entre no Clube e economize <span className="tabular club-gold-text">{formatBRL(clubPotential)}</span> neste pedido
+                </span>
+                <span className="mt-0.5 block text-[12.5px] text-white/70">Grátis. Vale já, nesta compra.</span>
+              </span>
+              <ChevronRight className="size-5 shrink-0 text-white/70" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
         <div className="mt-3 space-y-2.5 rounded-[22px] bg-card p-4 shadow-card">
           <Row label="Subtotal" value={formatBRL(quote?.subtotalCents ?? localTotal + savings)} loading={!quote} />
-          {savings > 0 && <Row label="Descontos" value={`− ${formatBRL(savings)}`} tone="sale" loading={!quote} />}
+          {savings - clubSavings > 0 && <Row label="Descontos" value={`− ${formatBRL(savings - clubSavings)}`} tone="sale" loading={!quote} />}
+          {clubSavings > 0 && <Row label="Preço de Clube" value={`− ${formatBRL(clubSavings)}`} tone="club" loading={!quote} />}
           <Row
             label="Entrega"
             value={quote ? (quote.deliveryFeeCents === 0 ? "Grátis" : formatBRL(quote.deliveryFeeCents)) : ""}

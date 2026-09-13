@@ -58,22 +58,28 @@ export type CheckoutInput = z.infer<typeof checkoutSchema>;
 
 export const productUnitSchema = z.enum(["un", "kg", "g", "l", "ml", "pct", "cx"]);
 
-export const productInputSchema = z.object({
-  name: z.string().trim().min(2).max(120),
-  description: z.string().trim().max(2000).default(""),
-  brand: z.string().trim().max(60).optional().or(z.literal("")),
-  categoryId: z.string().uuid(),
-  priceCents: z.number().int().min(1),
-  compareAtCents: z.number().int().min(0).nullable().optional(),
-  unit: productUnitSchema.default("un"),
-  unitLabel: z.string().trim().max(30).default(""),
-  stock: z.number().int().min(0).default(0),
-  sku: z.string().trim().max(40).optional().or(z.literal("")),
-  imageUrl: z.string().url().nullable().optional(),
-  active: z.boolean().default(true),
-  featured: z.boolean().default(false),
-  tags: z.array(z.string().trim().min(1).max(30)).max(20).default([]),
-});
+export const productInputSchema = z
+  .object({
+    name: z.string().trim().min(2).max(120),
+    description: z.string().trim().max(2000).default(""),
+    brand: z.string().trim().max(60).optional().or(z.literal("")),
+    categoryId: z.string().uuid(),
+    priceCents: z.number().int().min(1),
+    compareAtCents: z.number().int().min(0).nullable().optional(),
+    clubPriceCents: z.number().int().min(1).nullable().optional(),
+    unit: productUnitSchema.default("un"),
+    unitLabel: z.string().trim().max(30).default(""),
+    stock: z.number().int().min(0).default(0),
+    sku: z.string().trim().max(40).optional().or(z.literal("")),
+    imageUrl: z.string().url().nullable().optional(),
+    active: z.boolean().default(true),
+    featured: z.boolean().default(false),
+    tags: z.array(z.string().trim().min(1).max(30)).max(20).default([]),
+  })
+  .refine((p) => !p.clubPriceCents || p.clubPriceCents < p.priceCents, {
+    message: "O preço de clube deve ser menor que o preço de venda",
+    path: ["clubPriceCents"],
+  });
 export type ProductInput = z.infer<typeof productInputSchema>;
 
 export const categoryInputSchema = z.object({

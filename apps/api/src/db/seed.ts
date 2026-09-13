@@ -84,6 +84,7 @@ async function main() {
       categoryId,
       priceCents: cents(p.price),
       compareAtCents: p.compareAt ? cents(p.compareAt) : null,
+      clubPriceCents: p.clubPrice ? cents(p.clubPrice) : null,
       unit: p.unit ?? "un",
       unitLabel: p.unitLabel,
       stock: p.stock ?? 40,
