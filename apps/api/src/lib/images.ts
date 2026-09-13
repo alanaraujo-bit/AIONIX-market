@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { db, schema } from "../db/client";
-import { env } from "../env";
 import { badRequest } from "./http";
 import { putObject } from "./storage";
 
@@ -40,7 +39,9 @@ export async function storeImage(input: Buffer, opts: { maxSize?: number; trim?:
 
   const key = `${new Date().getUTCFullYear()}/${randomUUID()}.webp`;
   await putObject(key, data, "image/webp");
-  const url = `${env.PUBLIC_API_URL.replace(/\/$/, "")}/api/media/${key}`;
+  // Origin-relative: both frontends proxy /api/* to this service, so the same
+  // URL resolves on localhost, previews and production.
+  const url = `/api/media/${key}`;
   const [row] = await db
     .insert(schema.media)
     .values({ key, url, mime: "image/webp", width: info.width, height: info.height, sizeBytes: data.length, blurDataUrl })
