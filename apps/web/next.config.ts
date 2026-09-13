@@ -5,6 +5,7 @@ const API_ORIGIN = process.env.API_ORIGIN ?? "http://localhost:8080";
 const nextConfig: NextConfig = {
   transpilePackages: ["@aionix/shared"],
   poweredByHeader: false,
+  devIndicators: false,
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

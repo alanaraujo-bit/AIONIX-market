@@ -1,0 +1,567 @@
+{
+ "cafe": [
+  {
+   "i": 1,
+   "name": "Café Torrado E Moído Tradicional Melitta Caixa 500g",
+   "img": "https://images.openfoodfacts.org/images/products/789/102/100/6125/front_pt.38.400.jpg"
+  },
+  {
+   "i": 14,
+   "name": "Café Torrado E Moído Extraforte Melitta Caixa 500g",
+   "img": "https://images.openfoodfacts.org/images/products/789/102/100/6934/front_pt.8.400.jpg"
+  },
+  {
+   "i": 5,
+   "name": "Pilao Traditional Coffee",
+   "img": "https://images.openfoodfacts.org/images/products/789/608/901/2637/front_pt.9.400.jpg"
+  },
+  {
+   "i": 13,
+   "name": "Café 3 Corações Tradicional",
+   "img": "https://images.openfoodfacts.org/images/products/789/604/510/2440/front_pt.3.400.jpg"
+  },
+  {
+   "i": 9,
+   "name": "Gourmet Cerrado Mineiro",
+   "img": "https://images.openfoodfacts.org/images/products/789/604/510/1658/front_pt.26.400.jpg"
+  },
+  {
+   "i": 4,
+   "name": "Nescafé Original Extraforte",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/030/0503/front_pt.17.400.jpg"
+  },
+  {
+   "i": 8,
+   "name": "Café Em Cápsula Torrado E Moído Intenso Espresso Illy Caixa 57g 10 Unidades",
+   "img": "https://images.openfoodfacts.org/images/products/800/375/315/8761/front_pt.12.400.jpg"
+  },
+  {
+   "i": 21,
+   "name": "Mochaccino Em Cápsula Canela Nescafé Dolce Gusto Caixa 172g 10 Unidades",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/029/4376/front_pt.3.400.jpg"
+  }
+ ],
+ "matinais": [
+  {
+   "i": 1,
+   "name": "Aveia Em Flocos Nestlé Caixa 170g",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/010/2640/front_pt.10.400.jpg"
+  },
+  {
+   "i": 5,
+   "name": "Cereal Matinal Original Kelloggs Sucrilhos Caixa 510g",
+   "img": "https://images.openfoodfacts.org/images/products/789/600/400/4679/front_pt.3.400.jpg"
+  },
+  {
+   "i": 12,
+   "name": "Granola Integral Cereais Maltados",
+   "img": "https://images.openfoodfacts.org/images/products/789/628/300/1093/front_pt.25.400.jpg"
+  },
+  {
+   "i": 20,
+   "name": "Granola Cacau Mãe Terra Pacote 250g",
+   "img": "https://images.openfoodfacts.org/images/products/789/649/699/5226/front_en.3.400.jpg"
+  },
+  {
+   "i": 23,
+   "name": "Toddy Original 750g",
+   "img": "https://images.openfoodfacts.org/images/products/789/284/081/9170/front_en.63.400.jpg"
+  },
+  {
+   "i": 28,
+   "name": "Achocolatado Nescau",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/037/9738/front_pt.30.400.jpg"
+  },
+  {
+   "i": 30,
+   "name": "Nesquik Chocolate",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/007/3537/front_en.19.400.jpg"
+  }
+ ],
+ "laticinios": [
+  {
+   "i": 0,
+   "name": "LEITE PO NINHO INTEGRAL",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/032/5858/front_pt.34.400.jpg"
+  },
+  {
+   "i": 1,
+   "name": "Leite Integral Piracanjuba",
+   "img": "https://images.openfoodfacts.org/images/products/789/821/515/1708/front_pt.38.400.jpg"
+  },
+  {
+   "i": 3,
+   "name": "Creme de Leite Piracanjuba",
+   "img": "https://images.openfoodfacts.org/images/products/789/821/515/1784/front_pt.48.400.jpg"
+  },
+  {
+   "i": 6,
+   "name": "Leite moça",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/006/5440/front_pt.53.400.jpg"
+  },
+  {
+   "i": 12,
+   "name": "Yakult Leite Fermentado Desnatado Adoçado L. casei Shirota",
+   "img": "https://images.openfoodfacts.org/images/products/000/007/891/1000/front_pt.4.400.jpg"
+  },
+  {
+   "i": 14,
+   "name": "Leite NoLac Zero Lactose Integral Itambé 1L",
+   "img": "https://images.openfoodfacts.org/images/products/789/605/112/8069/front_pt.20.400.jpg"
+  },
+  {
+   "i": 25,
+   "name": "Requeijão Vigor 200G",
+   "img": "https://images.openfoodfacts.org/images/products/789/199/914/4485/front_en.3.400.jpg"
+  },
+  {
+   "i": 28,
+   "name": "Cream Cheese Light Philadelphia Pote 150g",
+   "img": "https://images.openfoodfacts.org/images/products/789/333/332/5109/front_pt.6.400.jpg"
+  },
+  {
+   "i": 31,
+   "name": "Mussarela Fatiada",
+   "img": "https://images.openfoodfacts.org/images/products/789/109/710/3841/front_en.3.400.jpg"
+  },
+  {
+   "i": 39,
+   "name": "Queijo Processado Uht Original Polenguinho 136g 8 Unidades",
+   "img": "https://images.openfoodfacts.org/images/products/789/114/301/7405/front_pt.16.400.jpg"
+  },
+  {
+   "i": 46,
+   "name": "Queijo Minas Frescal",
+   "img": "https://images.openfoodfacts.org/images/products/789/804/624/0015/front_pt.3.400.jpg"
+  },
+  {
+   "i": 48,
+   "name": "Manteiga Aviação",
+   "img": "https://images.openfoodfacts.org/images/products/789/633/110/0310/front_pt.4.400.jpg"
+  },
+  {
+   "i": 57,
+   "name": "Manteiga Extra Com Sal Président Gastronomique Pote 200g",
+   "img": "https://images.openfoodfacts.org/images/products/789/109/700/1338/front_pt.6.400.jpg"
+  }
+ ],
+ "mercearia": [
+  {
+   "i": 4,
+   "name": "Arroz Integral",
+   "img": "https://images.openfoodfacts.org/images/products/789/600/675/5517/front_pt.3.400.jpg"
+  },
+  {
+   "i": 5,
+   "name": "Arroz Tio João 100 Grãos Nobres Tipo 1 Classe Longo Fino 1 Kg",
+   "img": "https://images.openfoodfacts.org/images/products/789/350/002/0110/front_pt.13.400.jpg"
+  },
+  {
+   "i": 9,
+   "name": "Arroz Tipo 1 Camil 5kg",
+   "img": "https://images.openfoodfacts.org/images/products/789/600/671/1155/front_pt.5.400.jpg"
+  },
+  {
+   "i": 23,
+   "name": "AZEITE EXT VIRGEM ANDORINHA",
+   "img": "https://images.openfoodfacts.org/images/products/560/121/612/0152/front_pt.7.400.jpg"
+  },
+  {
+   "i": 24,
+   "name": "Azeite de Oliva Extravirgem Clássico",
+   "img": "https://images.openfoodfacts.org/images/products/560/125/223/1164/front_pt.38.400.jpg"
+  },
+  {
+   "i": 25,
+   "name": "Óleo De Soja Tipo 1",
+   "img": "https://images.openfoodfacts.org/images/products/789/603/609/0244/front_pt.11.400.jpg"
+  },
+  {
+   "i": 55,
+   "name": "Farinha De Mandioca Tipo 1 Yoki Pacote 500g",
+   "img": "https://images.openfoodfacts.org/images/products/789/109/530/0372/front_pt.15.400.jpg"
+  },
+  {
+   "i": 64,
+   "name": "Farinha de Trigo Tradicional Bunge 1 Kg",
+   "img": "https://images.openfoodfacts.org/images/products/789/108/000/7705/front_en.3.400.jpg"
+  },
+  {
+   "i": 67,
+   "name": "KETCHUP TRAD SQUEEZE HELLMANNS",
+   "img": "https://images.openfoodfacts.org/images/products/789/115/002/7848/front_pt.19.400.jpg"
+  },
+  {
+   "i": 70,
+   "name": "Molho De Tomate Tradicional Pomarola Sachê 300g",
+   "img": "https://images.openfoodfacts.org/images/products/789/603/609/9988/front_pt.13.400.jpg"
+  },
+  {
+   "i": 91,
+   "name": "Pâtes spaghetti au blé complet integral 500g",
+   "img": "https://images.openfoodfacts.org/images/products/807/680/952/9419/front_fr.1673.400.jpg"
+  },
+  {
+   "i": 94,
+   "name": "Massa Italiana para Lasanha BARILLA",
+   "img": "https://images.openfoodfacts.org/images/products/807/680/954/2517/front_en.80.400.jpg"
+  },
+  {
+   "i": 95,
+   "name": "Macarrão Instantâneo Lámen Carne Nissin Miojo Pacote 85g",
+   "img": "https://images.openfoodfacts.org/images/products/789/107/900/0205/front_pt.9.400.jpg"
+  },
+  {
+   "i": 102,
+   "name": "Macarrão Parafuso com Ovos",
+   "img": "https://images.openfoodfacts.org/images/products/789/895/185/0118/front_pt.29.400.jpg"
+  },
+  {
+   "i": 113,
+   "name": "Cup Noodles Cheddar",
+   "img": "https://images.openfoodfacts.org/images/products/789/107/901/3113/front_pt.4.400.jpg"
+  },
+  {
+   "i": 116,
+   "name": "Açúcar Refinado Caravelas Pacote 1kg",
+   "img": "https://images.openfoodfacts.org/images/products/789/689/490/0013/front_en.3.400.jpg"
+  },
+  {
+   "i": 133,
+   "name": "Açúcar Cristal Bruto Tipo Demerara",
+   "img": "https://images.openfoodfacts.org/images/products/789/191/002/0065/front_pt.26.400.jpg"
+  }
+ ],
+ "snacks": [
+  {
+   "i": 4,
+   "name": "Chocolate ao leite Alpino",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/033/6373/front_en.18.400.jpg"
+  },
+  {
+   "i": 7,
+   "name": "Chocolate Ao Leite Hersheys Pacote 82g",
+   "img": "https://images.openfoodfacts.org/images/products/789/997/040/2814/front_pt.26.400.jpg"
+  },
+  {
+   "i": 13,
+   "name": "Wafer Oreo Cobertura Chocolate Branco E Biscoito Lacta Bis Xtra",
+   "img": "https://images.openfoodfacts.org/images/products/762/230/098/8517/front_pt.21.400.jpg"
+  },
+  {
+   "i": 17,
+   "name": "Chocolate Ao Leite Aerado Suflair Pacote 80g",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/032/9856/front_pt.15.400.jpg"
+  },
+  {
+   "i": 18,
+   "name": "Talento Avelãs",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/812/1728/front_pt.22.400.jpg"
+  },
+  {
+   "i": 21,
+   "name": "Chocolate Ao Leite Com Castanha De Caju Garoto Pacote 80g",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/812/4170/front_pt.3.400.jpg"
+  },
+  {
+   "i": 30,
+   "name": "Pack Biscoito Original Club Social",
+   "img": "https://images.openfoodfacts.org/images/products/762/230/099/0749/front_es.17.400.jpg"
+  },
+  {
+   "i": 34,
+   "name": "Biscoito Original Batman Oreo Pacote 90g",
+   "img": "https://images.openfoodfacts.org/images/products/762/230/083/0151/front_en.15.400.jpg"
+  },
+  {
+   "i": 40,
+   "name": "Biscoito Recheio Doce De Leite Bono Pacote 90g",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/037/6928/front_pt.3.400.jpg"
+  },
+  {
+   "i": 42,
+   "name": "Biscoito Recheio Morango Trakinas Recheio Pacote 126g",
+   "img": "https://images.openfoodfacts.org/images/products/762/221/059/2781/front_pt.7.400.jpg"
+  },
+  {
+   "i": 49,
+   "name": "Paçoquita",
+   "img": "https://images.openfoodfacts.org/images/products/789/633/600/2237/front_en.22.400.jpg"
+  },
+  {
+   "i": 70,
+   "name": "Salgadinho De Batata Original Pringles Tubo 104g",
+   "img": "https://images.openfoodfacts.org/images/products/789/600/400/6277/front_pt.24.400.jpg"
+  },
+  {
+   "i": 71,
+   "name": "YOKI Batata Palha Tradicional 105 g",
+   "img": "https://images.openfoodfacts.org/images/products/789/109/503/1115/front_en.9.400.jpg"
+  },
+  {
+   "i": 77,
+   "name": "Batata Frita Lay's Clássica 115g",
+   "img": "https://images.openfoodfacts.org/images/products/789/284/082/3405/front_pt.56.400.jpg"
+  },
+  {
+   "i": 83,
+   "name": "Batata Frita Ondulada Original Elma Chips Ruffles Pacote 115g",
+   "img": "https://images.openfoodfacts.org/images/products/789/284/081/7978/front_pt.4.400.jpg"
+  }
+ ],
+ "padaria": [
+  {
+   "i": 0,
+   "name": "Pão De Forma Panco Premium Pacote 500g",
+   "img": "https://images.openfoodfacts.org/images/products/789/120/301/0056/front_en.11.400.jpg"
+  },
+  {
+   "i": 3,
+   "name": "Pão fermentação natural tradicional",
+   "img": "https://images.openfoodfacts.org/images/products/789/196/206/4048/front_en.3.400.jpg"
+  },
+  {
+   "i": 6,
+   "name": "Pão Integral Tradicional Wickbold Pacote 400g",
+   "img": "https://images.openfoodfacts.org/images/products/789/606/630/1235/front_pt.12.400.jpg"
+  },
+  {
+   "i": 29,
+   "name": "Bisnaguinhas Originais",
+   "img": "https://images.openfoodfacts.org/images/products/789/120/301/0605/front_pt.42.400.jpg"
+  },
+  {
+   "i": 33,
+   "name": "Torrada bauducco",
+   "img": "https://images.openfoodfacts.org/images/products/789/196/205/3189/front_en.5.400.jpg"
+  },
+  {
+   "i": 34,
+   "name": "Tortilha Rap10 Fit - Bimbo - 330g",
+   "img": "https://images.openfoodfacts.org/images/products/789/600/236/4546/front_en.47.400.jpg"
+  },
+  {
+   "i": 41,
+   "name": "Pão De Leite Seven Boys Pacote 450g",
+   "img": "https://images.openfoodfacts.org/images/products/789/119/301/0081/front_pt.11.400.jpg"
+  },
+  {
+   "i": 48,
+   "name": "Bolinho Duplo Chocolate Bauducco Pacote 40g",
+   "img": "https://images.openfoodfacts.org/images/products/789/196/203/1170/front_en.24.400.jpg"
+  },
+  {
+   "i": 63,
+   "name": "Mistura Para Brownie Sabor Chocolate Dr. Oetker 480g",
+   "img": "https://images.openfoodfacts.org/images/products/789/104/806/7000/front_pt.3.400.jpg"
+  }
+ ],
+ "frios": [
+  {
+   "i": 0,
+   "name": "Salsicha Viena Perdigão 500g",
+   "img": "https://images.openfoodfacts.org/images/products/789/151/574/2065/front_pt.16.400.jpg"
+  },
+  {
+   "i": 1,
+   "name": "Linguiça Calabresa",
+   "img": "https://images.openfoodfacts.org/images/products/789/116/400/5832/front_pt.7.400.jpg"
+  },
+  {
+   "i": 6,
+   "name": "Linguiça Toscana Com Queijo Coalho Perdigão Na Brasa 600g",
+   "img": "https://images.openfoodfacts.org/images/products/789/151/548/5139/front_pt.28.400.jpg"
+  },
+  {
+   "i": 12,
+   "name": "Salsicha Hot Dog Sadia 500g 10 Unidades",
+   "img": "https://images.openfoodfacts.org/images/products/789/300/013/5529/front_pt.21.400.jpg"
+  },
+  {
+   "i": 24,
+   "name": "Presunto Cozido Fatiado",
+   "img": "https://images.openfoodfacts.org/images/products/789/151/548/4040/front_pt.12.400.jpg"
+  },
+  {
+   "i": 25,
+   "name": "Presunto Cozido Fatiado Sadia Soltíssimo 200g",
+   "img": "https://images.openfoodfacts.org/images/products/789/151/543/2652/front_en.10.400.jpg"
+  },
+  {
+   "i": 26,
+   "name": "Mortadela defumada fatiada",
+   "img": "https://images.openfoodfacts.org/images/products/789/151/543/4311/front_pt.10.400.jpg"
+  }
+ ],
+ "congelados": [
+  {
+   "i": 1,
+   "name": "Sorvete Ovomaltine Kibon Pote 800ml",
+   "img": "https://images.openfoodfacts.org/images/products/789/115/006/1040/front_pt.3.400.jpg"
+  },
+  {
+   "i": 6,
+   "name": "Futuro burger defumado",
+   "img": "https://images.openfoodfacts.org/images/products/789/867/866/1172/front_pt.4.400.jpg"
+  },
+  {
+   "i": 8,
+   "name": "Pizza de Lombo com Catupiry",
+   "img": "https://images.openfoodfacts.org/images/products/789/490/457/8566/front_pt.9.400.jpg"
+  },
+  {
+   "i": 12,
+   "name": "Batata Pré Frita Smiles Congelada",
+   "img": "https://images.openfoodfacts.org/images/products/789/610/580/0897/front_pt.15.400.jpg"
+  },
+  {
+   "i": 13,
+   "name": "Batata McCain Airfryer Extra Crocante",
+   "img": "https://images.openfoodfacts.org/images/products/789/610/580/1092/front_pt.24.400.jpg"
+  },
+  {
+   "i": 14,
+   "name": "Filé De Peito De Frango Congelado Sadia 1kg",
+   "img": "https://images.openfoodfacts.org/images/products/789/300/048/2401/front_pt.7.400.jpg"
+  },
+  {
+   "i": 17,
+   "name": "Sorvete Flocos Kibon Cremosíssimo Pote 1,5L (700g peso líquido)",
+   "img": "https://images.openfoodfacts.org/images/products/789/115/005/0242/front_en.12.400.jpg"
+  },
+  {
+   "i": 19,
+   "name": "Pão de Queijo coquetel congelado",
+   "img": "https://images.openfoodfacts.org/images/products/074/935/508/0137/front_en.7.400.jpg"
+  },
+  {
+   "i": 22,
+   "name": "Camarão Grande Descascado Congelado",
+   "img": "https://images.openfoodfacts.org/images/products/789/151/558/7796/front_en.3.400.jpg"
+  },
+  {
+   "i": 35,
+   "name": "Chocolate Fudge Brownie",
+   "img": "https://images.openfoodfacts.org/images/products/007/684/037/6865/front_pt.4.400.jpg"
+  },
+  {
+   "i": 39,
+   "name": "Sorvete Galak Nestlé Pote 1,5l",
+   "img": "https://images.openfoodfacts.org/images/products/789/100/010/6945/front_pt.7.400.jpg"
+  },
+  {
+   "i": 45,
+   "name": "Sorvete Baunilha Häagen Dazs Pote 473ml",
+   "img": "https://images.openfoodfacts.org/images/products/074/570/004/0030/front_pt.3.400.jpg"
+  }
+ ],
+ "bebidas": [
+  {
+   "i": 0,
+   "name": "AGUA MIN CRYSTAL S/GAS 500ML",
+   "img": "https://images.openfoodfacts.org/images/products/789/490/053/0001/front_pt.30.400.jpg"
+  },
+  {
+   "i": 4,
+   "name": "H2OH! limão 500ml",
+   "img": "https://images.openfoodfacts.org/images/products/789/284/081/2423/front_pt.23.400.jpg"
+  },
+  {
+   "i": 5,
+   "name": "Aranciata Orange",
+   "img": "https://images.openfoodfacts.org/images/products/004/150/823/5785/front_en.21.400.jpg"
+  },
+  {
+   "i": 11,
+   "name": "Água Mineral São Lourenço Com Gás",
+   "img": "https://images.openfoodfacts.org/images/products/789/606/280/1050/front_pt.7.400.jpg"
+  },
+  {
+   "i": 31,
+   "name": "Refrigerante Coca Cola Original Garrafa 2l",
+   "img": "https://images.openfoodfacts.org/images/products/789/490/002/7013/front_pt.60.400.jpg"
+  },
+  {
+   "i": 38,
+   "name": "Guarana 2L",
+   "img": "https://images.openfoodfacts.org/images/products/789/199/100/1342/front_pt.11.400.jpg"
+  },
+  {
+   "i": 36,
+   "name": "Refrigerante Sem Açúcar Coca Cola Lata 310ml",
+   "img": "https://images.openfoodfacts.org/images/products/789/490/070/1159/front_pt.20.400.jpg"
+  },
+  {
+   "i": 67,
+   "name": "Suco Integral Laranja Natural One Refrigerado Garrafa 900ml",
+   "img": "https://images.openfoodfacts.org/images/products/789/855/344/2933/front_en.7.400.jpg"
+  },
+  {
+   "i": 61,
+   "name": "Suco Integral Laranja Xandô Garrafa 900ml",
+   "img": "https://images.openfoodfacts.org/images/products/789/662/310/0509/front_pt.10.400.jpg"
+  },
+  {
+   "i": 54,
+   "name": "Suco Concentrado Caju Maguary Garrafa 500ml",
+   "img": "https://images.openfoodfacts.org/images/products/789/600/055/4369/front_en.3.400.jpg"
+  },
+  {
+   "i": 80,
+   "name": "CERVEJA HEINEKEN LAGER LATA 350ML",
+   "img": "https://images.openfoodfacts.org/images/products/789/604/550/6873/front_en.7.400.jpg"
+  },
+  {
+   "i": 98,
+   "name": "cerveja Stella Artois",
+   "img": "https://images.openfoodfacts.org/images/products/789/114/910/1900/front_en.3.400.jpg"
+  },
+  {
+   "i": 90,
+   "name": "Brahma Chopp",
+   "img": "https://images.openfoodfacts.org/images/products/789/114/901/0509/front_pt.7.400.jpg"
+  },
+  {
+   "i": 108,
+   "name": "Red bull",
+   "img": "https://images.openfoodfacts.org/images/products/061/126/999/1000/front_en.108.400.jpg"
+  },
+  {
+   "i": 109,
+   "name": "Energy Ultra",
+   "img": "https://images.openfoodfacts.org/images/products/007/084/702/2206/front_pt.4.400.jpg"
+  },
+  {
+   "i": 124,
+   "name": "Isotônico Frutas Cítricas Gatorade Garrafa 500ml",
+   "img": "https://images.openfoodfacts.org/images/products/789/284/080/8013/front_pt.12.400.jpg"
+  },
+  {
+   "i": 153,
+   "name": "Reservado Sweet Rose Suave",
+   "img": "https://images.openfoodfacts.org/images/products/780/432/011/6952/front_pt.3.400.jpg"
+  }
+ ],
+ "higiene": [
+  {
+   "i": 2,
+   "name": "Máxima Protección Anticaries",
+   "img": "https://images.openbeautyfacts.org/images/products/789/102/413/4610/front_es.4.400.jpg"
+  },
+  {
+   "i": 8,
+   "name": "Sh Head&Shoul 200ml Anticaspa Limpeza",
+   "img": "https://images.openbeautyfacts.org/images/products/750/043/524/2615/front_pt.3.400.jpg"
+  },
+  {
+   "i": 10,
+   "name": "Nivea pearl & beauty",
+   "img": "https://images.openbeautyfacts.org/images/products/400/580/825/7669/front_en.13.400.jpg"
+  },
+  {
+   "i": 13,
+   "name": "Dove Antitraspirante Coco y Flor de Jazmín",
+   "img": "https://images.openbeautyfacts.org/images/products/779/129/304/0127/front_es.14.400.jpg"
+  }
+ ]
+}
