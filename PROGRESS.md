@@ -24,10 +24,11 @@ Persistent log so any session can resume. Newest entries at the bottom of each s
 - Credenciais do admin: `CREDENTIALS.local.md` (git-ignored). Demo cliente: `cliente@aionix.market` / `aionix2026`.
 
 ## Local dev
-- API: `pnpm -C apps/api dev` (porta 8080, usa `apps/api/.env` com DATABASE_URL do proxy Railway + S3).
+- **Ambientes Railway**: `production` (Postgres `altaria.proxy.rlwy.net:25486`) e `staging` (Postgres-Me7v, proxy `hayabusa.proxy.rlwy.net:28181`, env id `3bae5d31-4a17-4613-b103-8ad5a1b3d80f`). Dev local e E2E usam **staging** — nunca gravar pedidos/estoque de teste em produção. O bucket S3 é compartilhado (mídia não é transacional).
+- API: `pnpm -C apps/api dev` (porta 8080, usa `apps/api/.env` → staging + S3).
 - Web: `pnpm -C apps/web dev -p 3000`. Admin: `pnpm -C apps/admin dev -p 3001`.
-- Seed: `cd apps/api && pnpm exec tsx --env-file=.env.seed src/db/seed.ts` (idempotente; `--reimage` para rebaixar imagens).
-- QA visual: `node scripts/shot.mjs <url> <out.png> [--login] [--scroll N]`, fluxo E2E: `node scripts/flow.mjs http://localhost:3000 <dir>`.
+- Seed staging: `cd apps/api && pnpm exec tsx --env-file=.env src/db/seed.ts` (idempotente por slug; `--reimage` reprocessa imagens). Produção: `--env-file=.env.prod` (git-ignored).
+- QA: `node scripts/shot.mjs <url> <out.png> [--login] [--scroll N]`; E2E `node scripts/flow.mjs http://localhost:3000 <dir>`; realtime `node scripts/realtime-e2e.mjs`; PWA `node scripts/pwa-check.mjs <origin>`; testes `pnpm turbo test`; tipos `pnpm turbo typecheck`.
 
 ## Log
 - 2026-09-13: Repo inicializado, monorepo scaffold, Railway project + Postgres + bucket, API deployada (health OK).
@@ -37,4 +38,5 @@ Persistent log so any session can resume. Newest entries at the bottom of each s
 - 2026-09-13: PWA: manifest, service worker (offline + cache de mídia), ícones gerados (`scripts/icons.mjs`).
 - 2026-09-13: Fix Vercel: `API_ORIGIN` precisava estar em `turbo.json` (`globalEnv`/`env`), senão o rewrite `/api` caía. Mídia agora usa URLs relativas `/api/media/...`.
 - 2026-09-13: Admin completo (login, dashboard c/ gráfico, fila de pedidos c/ SSE + som, detalhe do pedido, produtos c/ upload/inline stock/bulk, categorias DnD, promoções, banners c/ prévia, mídia, clientes, configurações). E2E realtime (`scripts/realtime-e2e.mjs`) verde. Produção validada em ambos os domínios.
-- Próximo: revisão do advisor, polimento (imagens Commons com fundo cinza → trim mais agressivo), testes unitários de pricing, README.
+- 2026-09-13: Revisão do advisor aplicada: (1) bug de dinheiro — desconto fixo sem teto vendia por R$ 0,01 → piso de 10% do preço em `applyDiscount` + validação no cadastro da campanha; (2) `quoteCart` dividido em `buildQuote` puro + 15 testes vitest; (3) `pwa-check.mjs` valida manifest/ícones/SW/offline em produção (tudo verde; adicionado meta `apple-mobile-web-app-capable`); (4) checkout usa `etaMinutes` das configurações; (5) botões mortos no detalhe do pedido removidos; (6) pipeline de imagem detecta fundo claro uniforme e o leva a branco (Maçã/Tomate/Abacaxi), foto do pimentão trocada; (7) ambiente `staging` no Railway para dev/E2E — produção deixou de receber pedidos de teste (os pedidos #00001–#00003 em produção são resíduo dos E2E anteriores).
+- 2026-09-13: Contagem de produtos na categoria vem da query viva (não mais do ISR de 60s). README escrito.
