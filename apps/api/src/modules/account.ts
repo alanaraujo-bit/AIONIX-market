@@ -62,18 +62,6 @@ export const accountRoutes: FastifyPluginAsync = async (app) => {
     return { user: serializeUser(user), stats };
   });
 
-  /** Free, one-tap club enrollment. Idempotent. */
-  app.post("/club/join", async (req) => {
-    const { userId } = requireUser(req);
-    const [user] = await db
-      .update(schema.users)
-      .set({ clubMember: true, clubJoinedAt: sql`coalesce(${schema.users.clubJoinedAt}, now())` })
-      .where(eq(schema.users.id, userId))
-      .returning();
-    if (!user) throw notFound();
-    return { user: serializeUser(user) };
-  });
-
   app.patch("/", async (req) => {
     const { userId } = requireUser(req);
     const input = parse(profileSchema, req.body);

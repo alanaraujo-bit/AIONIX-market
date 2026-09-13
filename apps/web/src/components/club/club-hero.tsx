@@ -1,7 +1,7 @@
 "use client";
 
 import { formatBRL, type Product } from "@aionix/shared";
-import { ChevronRight, Crown, Sparkles } from "lucide-react";
+import { ChevronRight, Crown, UserRoundPlus } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useMe } from "@/lib/account";
@@ -57,7 +57,7 @@ export function ClubHero({ products }: { products: Product[] }) {
       ) : (
         <>
           <h2 className="mt-4 font-display text-[23px] leading-[1.08] font-extrabold tracking-[-0.03em]">
-            Clube AIONIX: <span className="club-gold-text">preço de membro</span>, sem mensalidade.
+            Quem compra pelo app <span className="club-gold-text">paga menos.</span>
           </h2>
           <p className="mt-2 text-[13.5px] leading-snug text-white/75">
             {sample ? (
@@ -66,7 +66,7 @@ export function ClubHero({ products }: { products: Product[] }) {
                 <span className="tabular line-through opacity-70">{formatBRL(sample.finalPriceCents)}</span>. E tem mais.
               </>
             ) : (
-              "Produtos selecionados com preço exclusivo para quem é do Clube."
+              "Crie sua conta: todo cliente cadastrado tem preço de membro nos produtos com a coroa."
             )}
           </p>
           <button
@@ -74,7 +74,7 @@ export function ClubHero({ products }: { products: Product[] }) {
             onClick={() => (haptic(), useClubSheet.getState().show(sample ?? null))}
             className="mt-4 inline-flex h-11 items-center gap-2 rounded-2xl bg-club-gold px-4 text-[14px] font-extrabold text-club-2 shadow-[0_10px_24px_-8px_rgb(228_181_74/0.7)] active:scale-[0.98] transition-transform"
           >
-            <Sparkles className="size-4" strokeWidth={2.4} /> Quero fazer parte
+            <UserRoundPlus className="size-4" strokeWidth={2.4} /> Criar minha conta
           </button>
         </>
       )}

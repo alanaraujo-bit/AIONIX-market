@@ -1,23 +1,24 @@
 "use client";
 
 import { formatBRL, type Product } from "@aionix/shared";
-import { ArrowRight, Check, Crown, Gift, PiggyBank, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Crown, Gift, ShoppingBag, UserRoundPlus } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { Button, cn } from "@/components/ui/primitives";
 import { Sheet } from "@/components/ui/sheet";
-import { effectivePrice, useClub, useJoinClub } from "@/lib/club";
+import { effectivePrice, useClub } from "@/lib/club";
 import { haptic } from "@/lib/toast";
 
-const PENDING_KEY = "club:pending-join";
+const PENDING_KEY = "club:pending-signup";
 
 interface ClubSheetState {
   open: boolean;
   /** Product that triggered the sheet, to preview "your price" on it. */
   product: Product | null;
-  show: (product?: Product | null) => void;
+  celebrate: boolean;
+  show: (product?: Product | null, opts?: { celebrate?: boolean }) => void;
   hide: () => void;
 }
 
@@ -25,14 +26,15 @@ interface ClubSheetState {
 export const useClubSheet = create<ClubSheetState>((set) => ({
   open: false,
   product: null,
-  show: (product = null) => set({ open: true, product }),
+  celebrate: false,
+  show: (product = null, opts = {}) => set({ open: true, product, celebrate: !!opts.celebrate }),
   hide: () => set({ open: false }),
 }));
 
 const BENEFITS = [
-  { icon: Crown, title: "Preço de Clube", text: "Produtos selecionados com preço exclusivo para membros." },
-  { icon: PiggyBank, title: "Economia que acumula", text: "Acompanhe na sua conta quanto o Clube já te devolveu." },
-  { icon: Gift, title: "Grátis, para sempre", text: "Sem mensalidade, sem pegadinha. Entrou, já vale." },
+  { icon: UserRoundPlus, title: "Crie sua conta", text: "É isso. Todo cliente cadastrado que compra pelo app faz parte." },
+  { icon: Crown, title: "Preço de Clube", text: "Produtos com a coroa saem pelo preço de membro, já no primeiro pedido." },
+  { icon: Gift, title: "Sem mensalidade", text: "Nada é cobrado. Sua economia fica registrada na conta." },
 ];
 
 /** Gold burst rendered once on enrollment. */
@@ -78,7 +80,7 @@ function PricePreview({ product, member }: { product: Product; member: boolean }
               {formatBRL(member ? club.cents : now.cents)}
             </motion.span>
           </AnimatePresence>
-          {!member && <span className="tabular text-[13px] font-semibold text-white/60">→ {formatBRL(club.cents)} no Clube</span>}
+          {!member && <span className="tabular text-[13px] font-semibold text-white/60">→ {formatBRL(club.cents)} com conta</span>}
           {member && now.compareAt && <span className="tabular text-[13px] text-white/50 line-through">{formatBRL(now.compareAt)}</span>}
         </div>
       </div>
@@ -88,20 +90,22 @@ function PricePreview({ product, member }: { product: Product; member: boolean }
 }
 
 export function ClubSheet() {
-  const { open, product, hide } = useClubSheet();
+  const { open, product, celebrate, hide } = useClubSheet();
   const { member, user, loading } = useClub();
-  const join = useJoinClub();
   const router = useRouter();
   const pathname = usePathname();
-  const [celebrate, setCelebrate] = useState(false);
+  const [burst, setBurst] = useState(false);
 
-  // Came back from login with a pending intent → reopen the sheet.
+  // Back from signup with a pending intent → celebrate the new membership.
   useEffect(() => {
     if (!user || loading) return;
     try {
       if (sessionStorage.getItem(PENDING_KEY)) {
         sessionStorage.removeItem(PENDING_KEY);
-        if (!user.clubMember) useClubSheet.getState().show();
+        if (user.clubMember) {
+          haptic([10, 40, 20, 60]);
+          useClubSheet.getState().show(null, { celebrate: true });
+        }
       }
     } catch {
       /* storage unavailable */
@@ -109,33 +113,28 @@ export function ClubSheet() {
   }, [user, loading]);
 
   useEffect(() => {
-    if (!open) setTimeout(() => setCelebrate(false), 300);
-  }, [open]);
-
-  const primary = () => {
-    haptic([8, 30, 8]);
-    if (!user) {
-      try {
-        sessionStorage.setItem(PENDING_KEY, "1");
-      } catch {
-        /* ignore */
-      }
-      hide();
-      router.push(`/entrar?next=${encodeURIComponent(pathname)}&mode=cadastro`);
-      return;
+    if (open && celebrate) {
+      setBurst(true);
+      const t = setTimeout(() => setBurst(false), 1600);
+      return () => clearTimeout(t);
     }
-    join.mutate(undefined, {
-      onSuccess: () => {
-        haptic([10, 40, 20, 60]);
-        setCelebrate(true);
-      },
-    });
+  }, [open, celebrate]);
+
+  const signup = () => {
+    haptic([8, 30, 8]);
+    try {
+      sessionStorage.setItem(PENDING_KEY, "1");
+    } catch {
+      /* ignore */
+    }
+    hide();
+    router.push(`/entrar?next=${encodeURIComponent(pathname)}&mode=cadastro`);
   };
 
   const firstName = user?.name.split(" ")[0];
-  const joined = member && !join.isPending;
+  const revoked = !!user && !member;
 
-  const footer = joined ? (
+  const footer = member ? (
     <div className="space-y-2.5">
       <Button size="lg" block className="!bg-club" onClick={() => (hide(), router.push("/clube"))}>
         Ver produtos do Clube <ArrowRight className="size-4" />
@@ -144,21 +143,20 @@ export function ClubSheet() {
         Continuar comprando
       </Button>
     </div>
+  ) : revoked ? (
+    <Button size="lg" block variant="secondary" onClick={hide}>
+      Entendi
+    </Button>
   ) : (
     <>
-      <Button size="lg" block loading={join.isPending} onClick={primary} className="!bg-club shadow-[0_12px_32px_-10px_rgb(74_45_143/0.6)]">
-        {user ? (
-          <>
-            <Sparkles className="size-4 text-club-gold-2" /> Quero fazer parte
-          </>
-        ) : (
-          <>
-            Criar conta e entrar no Clube <ArrowRight className="size-4" />
-          </>
-        )}
+      <Button size="lg" block onClick={signup} className="!bg-club shadow-[0_12px_32px_-10px_rgb(74_45_143/0.6)]">
+        <UserRoundPlus className="size-4 text-club-gold-2" /> Criar conta e entrar no Clube
       </Button>
       <p className="mt-2.5 flex items-center justify-center gap-1.5 text-center text-[12px] font-medium text-muted">
-        <Check className="size-3.5 text-brand-3" strokeWidth={3} /> Cancele quando quiser. Nada é cobrado.
+        <Check className="size-3.5 text-brand-3" strokeWidth={3} /> Grátis. Já tem conta?{" "}
+        <button type="button" onClick={() => (hide(), router.push(`/entrar?next=${encodeURIComponent(pathname)}`))} className="font-bold text-club">
+          Entrar
+        </button>
       </p>
     </>
   );
@@ -167,9 +165,9 @@ export function ClubSheet() {
     <Sheet open={open} onClose={hide} footer={footer}>
       <div className="club-surface grain -mx-5 -mt-2 rounded-[26px] px-5 pt-5 pb-5 text-white">
         <div className="relative">
-          <AnimatePresence>{celebrate && <Confetti />}</AnimatePresence>
+          <AnimatePresence>{burst && <Confetti />}</AnimatePresence>
           <motion.span
-            key={joined ? "member" : "guest"}
+            key={member ? "member" : "guest"}
             initial={{ scale: 0.6, rotate: -12, opacity: 0 }}
             animate={{ scale: 1, rotate: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 380, damping: 18 }}
@@ -178,31 +176,41 @@ export function ClubSheet() {
             <Crown className="size-7 text-club-gold-2 animate-twinkle" strokeWidth={2.4} fill="currentColor" />
           </motion.span>
           <AnimatePresence mode="wait" initial={false}>
-            {joined ? (
+            {member ? (
               <motion.div key="welcome" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                <p className="mt-4 text-[12px] font-bold tracking-[0.12em] text-club-gold-2 uppercase">Bem-vindo ao Clube</p>
+                <p className="mt-4 text-[12px] font-bold tracking-[0.12em] text-club-gold-2 uppercase">{celebrate ? "Bem-vindo ao Clube" : "Clube AIONIX"}</p>
                 <h2 className="mt-1 font-display text-[28px] leading-[1.05] font-extrabold tracking-[-0.03em]">
                   {celebrate ? `Pronto, ${firstName}!` : `Você é do Clube, ${firstName}.`}
                 </h2>
                 <p className="mt-2 text-[14.5px] leading-relaxed text-white/80">
-                  {celebrate ? "Seus preços já mudaram. Olha só a diferença:" : "Seus preços de membro já estão valendo em toda a loja."}
+                  {celebrate
+                    ? product
+                      ? "Sua conta já vale preço de membro. Olha só a diferença:"
+                      : "Sua conta já vale preço de membro: os produtos com a coroa mudaram de preço em toda a loja."
+                    : "Cliente cadastrado que compra pelo app tem preço de membro em toda a loja."}
                 </p>
+              </motion.div>
+            ) : revoked ? (
+              <motion.div key="revoked" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                <p className="mt-4 text-[12px] font-bold tracking-[0.12em] text-club-gold-2 uppercase">Clube AIONIX</p>
+                <h2 className="mt-1 font-display text-[28px] leading-[1.05] font-extrabold tracking-[-0.03em]">Sua conta está fora do Clube.</h2>
+                <p className="mt-2 text-[14.5px] leading-relaxed text-white/80">Fale com a loja para reativar seus preços de membro.</p>
               </motion.div>
             ) : (
               <motion.div key="pitch" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 <p className="mt-4 text-[12px] font-bold tracking-[0.12em] text-club-gold-2 uppercase">Clube AIONIX</p>
                 <h2 className="mt-1 font-display text-[28px] leading-[1.05] font-extrabold tracking-[-0.03em]">
-                  Preço de membro. <span className="club-gold-text">Sem mensalidade.</span>
+                  Quem compra pelo app <span className="club-gold-text">paga menos.</span>
                 </h2>
-                <p className="mt-2 text-[14.5px] leading-relaxed text-white/80">Os clientes mais fiéis pagam menos nos produtos com a coroa.</p>
+                <p className="mt-2 text-[14.5px] leading-relaxed text-white/80">Crie sua conta e os produtos com a coroa saem pelo preço de membro.</p>
               </motion.div>
             )}
           </AnimatePresence>
-          {product && <PricePreview product={product} member={joined} />}
+          {product && <PricePreview product={product} member={member} />}
         </div>
       </div>
 
-      {!joined && (
+      {!member && !revoked && (
         <ul className="space-y-3 pt-5 pb-1">
           {BENEFITS.map((b, i) => (
             <motion.li
@@ -222,6 +230,11 @@ export function ClubSheet() {
             </motion.li>
           ))}
         </ul>
+      )}
+      {member && celebrate && product && (
+        <p className="flex items-center gap-2 pt-4 pb-1 text-[13px] font-semibold text-club">
+          <ShoppingBag className="size-4" strokeWidth={2.4} /> Seus preços já mudaram em toda a loja.
+        </p>
       )}
     </Sheet>
   );

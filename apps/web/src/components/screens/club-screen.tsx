@@ -1,7 +1,7 @@
 "use client";
 
 import { formatBRL } from "@aionix/shared";
-import { Check, Crown, Gift, PiggyBank, Sparkles } from "lucide-react";
+import { Check, Crown, Gift, PiggyBank, UserRoundPlus } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { CartBar } from "@/components/cart-bar";
@@ -13,6 +13,7 @@ import { useClub } from "@/lib/club";
 import { haptic } from "@/lib/toast";
 
 const PERKS = [
+  { icon: UserRoundPlus, label: "Basta criar sua conta e comprar pelo app" },
   { icon: Crown, label: "Preço de membro nos produtos com a coroa" },
   { icon: PiggyBank, label: "Economia acumulada na sua conta" },
   { icon: Gift, label: "Grátis. Sem mensalidade, sem fidelidade" },
@@ -72,9 +73,9 @@ export function ClubScreen() {
             </>
           ) : (
             <>
-              <p className="mt-4 text-[11.5px] font-bold tracking-[0.12em] text-club-gold-2 uppercase">Para os clientes mais fiéis</p>
+              <p className="mt-4 text-[11.5px] font-bold tracking-[0.12em] text-club-gold-2 uppercase">Para quem compra pelo app</p>
               <h2 className="mt-1 font-display text-[26px] leading-[1.06] font-extrabold tracking-[-0.03em]">
-                Preço de membro. <span className="club-gold-text">Sem mensalidade.</span>
+                Cliente cadastrado <span className="club-gold-text">paga menos.</span>
               </h2>
               <ul className="mt-4 space-y-2">
                 {PERKS.map((p, i) => (
@@ -97,7 +98,7 @@ export function ClubScreen() {
                 onClick={() => (haptic(), useClubSheet.getState().show())}
                 className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-club-gold text-[15px] font-extrabold text-club-2 shadow-[0_12px_28px_-10px_rgb(228_181_74/0.8)] active:scale-[0.985] transition-transform"
               >
-                <Sparkles className="size-4" strokeWidth={2.4} /> Quero fazer parte
+                <UserRoundPlus className="size-4" strokeWidth={2.4} /> Criar minha conta
               </button>
             </>
           )}

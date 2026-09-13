@@ -24,6 +24,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         email: input.email,
         phone: input.phone || null,
         passwordHash: await hashPassword(input.password),
+        // Registering through the app is what makes someone a club member.
+        clubMember: true,
+        clubJoinedAt: new Date(),
       })
       .returning();
     await startSession(req, reply, { userId: user!.id, role: user!.role });

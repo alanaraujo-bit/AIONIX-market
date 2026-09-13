@@ -42,7 +42,8 @@ export const users = pgTable(
     phone: text("phone"),
     passwordHash: text("password_hash").notNull(),
     role: roleEnum("role").notNull().default("customer"),
-    clubMember: boolean("club_member").notNull().default(false),
+    /** Every registered customer is a member (the club is "buying through the app"); admin can revoke. */
+    clubMember: boolean("club_member").notNull().default(true),
     clubJoinedAt: timestamp("club_joined_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),

@@ -1,14 +1,14 @@
 "use client";
 
-import type { Product, PublicUser } from "@aionix/shared";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "./api";
+import type { Product } from "@aionix/shared";
 import { useSession } from "./session";
 
 /**
- * Catalog payloads are cached and user-agnostic: they carry `clubPriceCents`
- * for everyone. Which price the shopper actually pays is resolved here from the
- * session (for display) and by the server in quote/checkout (for money).
+ * Club rule: every registered customer who buys through the app is a member
+ * (admin can revoke). Catalog payloads are cached and user-agnostic: they carry
+ * `clubPriceCents` for everyone. Which price the shopper actually pays is
+ * resolved here from the session (for display) and by the server in
+ * quote/checkout (for money).
  */
 export function useClub() {
   const { user, loading } = useSession();
@@ -52,15 +52,3 @@ export function useEffectivePrice(p: Parameters<typeof effectivePrice>[0]) {
   return effectivePrice(p, member);
 }
 
-/** One-tap, free enrollment. Updates the session in place so prices flip instantly. */
-export function useJoinClub() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () => api<{ user: PublicUser }>("/me/club/join", { method: "POST" }),
-    onSuccess: ({ user }) => {
-      qc.setQueryData(["session"], { user });
-      void qc.invalidateQueries({ queryKey: ["me"] });
-      void qc.invalidateQueries({ queryKey: ["quote"] });
-    },
-  });
-}

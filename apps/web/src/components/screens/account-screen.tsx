@@ -143,10 +143,10 @@ export function AccountScreen() {
               <Crown className="size-6" strokeWidth={2.4} fill="currentColor" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block font-display text-[16px] leading-tight font-bold tracking-[-0.02em] text-club">Entre no Clube AIONIX</span>
-              <span className="mt-0.5 block text-[12.5px] text-club/70">Preço de membro em produtos selecionados. Grátis.</span>
+              <span className="block font-display text-[16px] leading-tight font-bold tracking-[-0.02em] text-club">Sua conta está fora do Clube</span>
+              <span className="mt-0.5 block text-[12.5px] text-club/70">Fale com a loja para reativar o preço de membro.</span>
             </span>
-            <span className="shrink-0 rounded-full bg-club px-3 py-1.5 text-[12px] font-extrabold text-white">Entrar</span>
+            <span className="shrink-0 rounded-full bg-club px-3 py-1.5 text-[12px] font-extrabold text-white">Saiba mais</span>
           </motion.button>
         )}
 
@@ -168,7 +168,7 @@ export function AccountScreen() {
             { href: "/pedidos", icon: Receipt, label: "Meus pedidos", sub: "Histórico e acompanhamento" },
             { href: "/conta/enderecos", icon: MapPin, label: "Endereços", sub: "Gerencie locais de entrega" },
             { href: "/ofertas", icon: Sparkles, label: "Ofertas do dia", sub: "Promoções ativas agora" },
-            { href: "/clube", icon: Crown, label: "Clube AIONIX", sub: user?.clubMember ? "Seus preços de membro" : "Preço de membro, sem mensalidade" },
+            { href: "/clube", icon: Crown, label: "Clube AIONIX", sub: user?.clubMember ? "Seus preços de membro" : "Preço de membro para quem compra pelo app" },
           ].map((item, i) => (
             <Link key={item.href} href={item.href} className={`flex items-center gap-3.5 px-4 py-3.5 active:bg-line-2/60 ${i > 0 ? "border-t border-line-2" : ""}`}>
               <span className="grid size-10 place-items-center rounded-2xl bg-brand-soft text-brand">

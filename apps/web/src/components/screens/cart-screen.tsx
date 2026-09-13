@@ -254,9 +254,9 @@ export function CartScreen() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[14.5px] leading-tight font-bold">
-                  Entre no Clube e economize <span className="tabular club-gold-text">{formatBRL(clubPotential)}</span> neste pedido
+                  Crie sua conta e economize <span className="tabular club-gold-text">{formatBRL(clubPotential)}</span> neste pedido
                 </span>
-                <span className="mt-0.5 block text-[12.5px] text-white/70">Grátis. Vale já, nesta compra.</span>
+                <span className="mt-0.5 block text-[12.5px] text-white/70">Grátis. Cliente cadastrado paga preço de Clube.</span>
               </span>
               <ChevronRight className="size-5 shrink-0 text-white/70" />
             </motion.button>
