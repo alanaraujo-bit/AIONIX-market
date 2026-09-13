@@ -1,6 +1,8 @@
 import "server-only";
 
-const API_ORIGIN = process.env.API_ORIGIN ?? "http://localhost:8080";
+const API_ORIGIN =
+  process.env.API_ORIGIN ??
+  (process.env.NODE_ENV === "production" ? "https://api-production-5de6.up.railway.app" : "http://localhost:8080");
 
 /** Server-side public catalog fetch. Returns null instead of throwing so pages can fall back to client fetching. */
 export async function serverGet<T>(path: string, revalidate = 30): Promise<T | null> {

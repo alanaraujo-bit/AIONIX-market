@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
-const API_ORIGIN = process.env.API_ORIGIN ?? "http://localhost:8080";
+const API_ORIGIN =
+  process.env.API_ORIGIN ??
+  (process.env.NODE_ENV === "production" ? "https://api-production-5de6.up.railway.app" : "http://localhost:8080");
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@aionix/shared"],
