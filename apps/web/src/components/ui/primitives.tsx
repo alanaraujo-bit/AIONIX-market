@@ -58,7 +58,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       )}
       {...props}
     >
-      <span className={cn("inline-flex items-center gap-2", loading && "opacity-0")}>{children as React.ReactNode}</span>
+      <span className={cn("flex w-full items-center justify-center gap-2", loading && "opacity-0")}>{children as React.ReactNode}</span>
       {loading && <Loader2 className="absolute size-5 animate-spin" />}
     </Pressable>
   );

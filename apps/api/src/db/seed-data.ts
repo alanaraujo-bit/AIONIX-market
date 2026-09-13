@@ -45,6 +45,30 @@ import seedImages from "./seed-images.json" with { type: "json" };
 const img = (group: keyof typeof seedImages, i: number) => (seedImages[group] as { img: string }[])[i]?.img;
 
 export const SEED_PRODUCTS: SeedProduct[] = [
+  // ---- Hortifruti (fotos: Wikimedia Commons, ver seed-images.json) -----
+  { name: "Banana Prata", category: "hortifruti", price: 6.99, unit: "kg", unitLabel: "kg", stock: 120, featured: true, tags: ["fruta", "banana"], image: img("hortifruti", 0), description: "Bananas prata selecionadas, no ponto ideal para consumo. Vendidas por quilo." },
+  { name: "Maçã Gala", category: "hortifruti", price: 9.9, unit: "kg", unitLabel: "kg", stock: 90, tags: ["fruta", "maçã"], image: img("hortifruti", 1) },
+  { name: "Laranja Pera", category: "hortifruti", price: 4.49, compareAt: 5.49, unit: "kg", unitLabel: "kg", stock: 150, tags: ["fruta", "laranja", "suco"], image: img("hortifruti", 2) },
+  { name: "Limão Tahiti", category: "hortifruti", price: 5.99, unit: "kg", unitLabel: "kg", stock: 80, tags: ["fruta", "limão"], image: img("hortifruti", 3) },
+  { name: "Tomate Italiano", category: "hortifruti", price: 8.49, unit: "kg", unitLabel: "kg", stock: 100, featured: true, tags: ["legume", "tomate"], image: img("hortifruti", 4) },
+  { name: "Cebola Branca", category: "hortifruti", price: 4.99, unit: "kg", unitLabel: "kg", stock: 110, tags: ["legume", "cebola"], image: img("hortifruti", 5) },
+  { name: "Batata Inglesa", category: "hortifruti", price: 5.49, unit: "kg", unitLabel: "kg", stock: 140, tags: ["legume", "batata"], image: img("hortifruti", 6) },
+  { name: "Cenoura", category: "hortifruti", price: 4.29, unit: "kg", unitLabel: "kg", stock: 95, tags: ["legume", "cenoura"], image: img("hortifruti", 7) },
+  { name: "Abacate", category: "hortifruti", price: 3.99, unitLabel: "unidade", stock: 60, tags: ["fruta", "abacate"], image: img("hortifruti", 8) },
+  { name: "Morango", category: "hortifruti", price: 9.9, compareAt: 12.9, unitLabel: "bandeja 250 g", stock: 40, featured: true, tags: ["fruta", "morango"], image: img("hortifruti", 9) },
+  { name: "Uva Verde sem Semente", category: "hortifruti", price: 12.9, unitLabel: "bandeja 500 g", stock: 35, tags: ["fruta", "uva"], image: img("hortifruti", 10) },
+  { name: "Alface Americana", category: "hortifruti", price: 3.49, unitLabel: "unidade", stock: 70, tags: ["verdura", "alface", "salada"], image: img("hortifruti", 11) },
+  { name: "Brócolis Ninja", category: "hortifruti", price: 6.49, unitLabel: "unidade", stock: 45, tags: ["verdura", "brócolis"], image: img("hortifruti", 12) },
+  { name: "Abacaxi Pérola", category: "hortifruti", price: 7.99, unitLabel: "unidade", stock: 50, tags: ["fruta", "abacaxi"], image: img("hortifruti", 13) },
+  { name: "Manga Palmer", category: "hortifruti", price: 6.99, unit: "kg", unitLabel: "kg", stock: 65, tags: ["fruta", "manga"], image: img("hortifruti", 14) },
+  { name: "Alho Nacional", category: "hortifruti", price: 3.29, unitLabel: "cabeça", stock: 130, tags: ["tempero", "alho"], image: img("hortifruti", 15) },
+  { name: "Pimentão Sortido", category: "hortifruti", price: 9.49, unit: "kg", unitLabel: "kg", stock: 55, tags: ["legume", "pimentão"], image: img("hortifruti", 16) },
+
+  // ---- Açougue & ovos ---------------------------------------------------
+  { name: "Ovos Brancos Grandes", category: "acougue", price: 12.9, compareAt: 14.9, unitLabel: "dúzia", stock: 90, featured: true, tags: ["ovos"], image: img("acougue", 0) },
+  { name: "Peito de Frango sem Osso", category: "acougue", price: 19.9, unit: "kg", unitLabel: "kg", stock: 70, tags: ["frango", "carne"], image: img("acougue", 1), description: "Filé de peito de frango resfriado, sem pele e sem osso. Ideal para grelhados e airfryer." },
+  { name: "Carne Moída de Primeira", category: "acougue", price: 34.9, compareAt: 39.9, unit: "kg", unitLabel: "kg", stock: 50, featured: true, tags: ["carne", "bovina"], image: img("acougue", 2), description: "Patinho moído na hora, magro e sem nervos." },
+
   // ---- Café & matinais ------------------------------------------------
   { name: "Café Torrado e Moído Tradicional Melitta", brand: "Melitta", category: "cafe-matinais", price: 21.9, compareAt: 25.9, unitLabel: "500 g", featured: true, stock: 64, tags: ["café", "melitta"], image: img("cafe", 0), description: "Blend clássico de grãos selecionados com torra média, corpo equilibrado e aroma marcante. Ideal para o coador e para a prensa francesa." },
   { name: "Café Torrado e Moído Extraforte Melitta", brand: "Melitta", category: "cafe-matinais", price: 22.9, unitLabel: "500 g", stock: 48, tags: ["café"], image: img("cafe", 1) },

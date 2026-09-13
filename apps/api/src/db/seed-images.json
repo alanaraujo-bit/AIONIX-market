@@ -563,5 +563,149 @@
    "name": "Dove Antitraspirante Coco y Flor de Jazmín",
    "img": "https://images.openbeautyfacts.org/images/products/779/129/304/0127/front_es.14.400.jpg"
   }
+ ],
+ "hortifruti": [
+  {
+   "i": 0,
+   "name": "Banana prata",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Banana_Fruit.JPG/960px-Banana_Fruit.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Banana Fruit.JPG",
+   "license": "Public domain"
+  },
+  {
+   "i": 1,
+   "name": "Maçã",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/960px-Red_Apple.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Red Apple.jpg",
+   "license": "CC BY 2.0"
+  },
+  {
+   "i": 2,
+   "name": "Laranja",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Orange-Fruit-Pieces.jpg/960px-Orange-Fruit-Pieces.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Orange-Fruit-Pieces.jpg",
+   "license": "CC BY-SA 3.0"
+  },
+  {
+   "i": 3,
+   "name": "Limão",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Limes_with_halves.jpg/960px-Limes_with_halves.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Limes with halves.jpg",
+   "license": "CC0"
+  },
+  {
+   "i": 4,
+   "name": "Tomate",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Tomato_je.jpg/960px-Tomato_je.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Tomato je.jpg",
+   "license": "CC BY-SA 3.0"
+  },
+  {
+   "i": 5,
+   "name": "Cebola",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Onion_on_White.JPG/960px-Onion_on_White.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Onion on White.JPG",
+   "license": "CC BY-SA 3.0"
+  },
+  {
+   "i": 6,
+   "name": "Batata",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Russet_potato_cultivar_with_sprouts.jpg/960px-Russet_potato_cultivar_with_sprouts.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Russet potato cultivar with sprouts.jpg",
+   "license": "Public domain"
+  },
+  {
+   "i": 7,
+   "name": "Cenoura",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dc/Carrot-fb.jpg/960px-Carrot-fb.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Carrot-fb.jpg",
+   "license": "CC BY-SA 4.0"
+  },
+  {
+   "i": 8,
+   "name": "Abacate",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/Avocado_with_cross_section_edit.jpg/960px-Avocado_with_cross_section_edit.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Avocado with cross section edit.jpg",
+   "license": "GFDL 1.2"
+  },
+  {
+   "i": 9,
+   "name": "Morango",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Big_strawberry_small_strawberry.jpg/960px-Big_strawberry_small_strawberry.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Big strawberry small strawberry.jpg",
+   "license": "CC BY-SA 4.0"
+  },
+  {
+   "i": 10,
+   "name": "Uva",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Table_grapes_on_white.jpg/960px-Table_grapes_on_white.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Table grapes on white.jpg",
+   "license": "GFDL 1.2"
+  },
+  {
+   "i": 11,
+   "name": "Alface",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Cosmopolitan_salad.jpg/960px-Cosmopolitan_salad.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Cosmopolitan salad.jpg",
+   "license": "CC BY-SA 4.0"
+  },
+  {
+   "i": 12,
+   "name": "Brócolis",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Broccoli_and_cross_section_edit.jpg/960px-Broccoli_and_cross_section_edit.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Broccoli and cross section edit.jpg",
+   "license": "GFDL 1.2"
+  },
+  {
+   "i": 14,
+   "name": "Abacaxi",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/Pineapple_on_white_table.jpg/960px-Pineapple_on_white_table.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Pineapple on white table.jpg",
+   "license": "CC0"
+  },
+  {
+   "i": 15,
+   "name": "Manga",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/Mango_and_cross_section_edit.jpg/960px-Mango_and_cross_section_edit.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Mango and cross section edit.jpg",
+   "license": "GFDL 1.2"
+  },
+  {
+   "i": 16,
+   "name": "Alho",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Opened_garlic_bulb_with_garlic_clove.jpg/960px-Opened_garlic_bulb_with_garlic_clove.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Opened garlic bulb with garlic clove.jpg",
+   "license": "CC BY 2.0"
+  },
+  {
+   "i": 17,
+   "name": "Pimentão",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/10/Red%2C_Yellow%2C_and_Green_bell_peppers.jpg/960px-Red%2C_Yellow%2C_and_Green_bell_peppers.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Red, Yellow, and Green bell peppers.jpg",
+   "license": "CC0"
+  }
+ ],
+ "acougue": [
+  {
+   "i": 18,
+   "name": "Ovos",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/12/6-Pack-Chicken-Eggs.jpg/960px-6-Pack-Chicken-Eggs.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:6-Pack-Chicken-Eggs.jpg",
+   "license": "Public domain"
+  },
+  {
+   "i": 19,
+   "name": "Peito de frango",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/Raw_chicken_slices.jpg/960px-Raw_chicken_slices.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Raw chicken slices.jpg",
+   "license": "CC0"
+  },
+  {
+   "i": 21,
+   "name": "Carne moída",
+   "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d1/Hackfleisch-1.jpg/960px-Hackfleisch-1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "source": "Wikimedia Commons: File:Hackfleisch-1.jpg",
+   "license": "CC BY-SA 3.0"
+  }
  ]
 }
