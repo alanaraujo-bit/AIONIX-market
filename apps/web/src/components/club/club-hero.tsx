@@ -22,8 +22,7 @@ export function ClubHero({ products }: { products: Product[] }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 260, damping: 28 }}
       className="club-surface grain mx-5 rounded-[26px] p-5 text-white"
     >
