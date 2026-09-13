@@ -58,7 +58,7 @@ export const adminOpsRoutes: FastifyPluginAsync = async (app) => {
                coalesce(sum(${o.totalCents}), 0)::int as revenue,
                count(*)::int as orders
         from ${o}
-        where ${o.createdAt} >= ${start} and ${o.status} <> 'cancelled'
+        where ${o.createdAt} >= ${start.toISOString()}::timestamptz and ${o.status} <> 'cancelled'
         group by 1 order by 1`),
       db
         .select({ status: o.status, n: sql<number>`count(*)::int` })

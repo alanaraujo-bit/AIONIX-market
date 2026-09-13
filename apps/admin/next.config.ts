@@ -7,6 +7,7 @@ const API_ORIGIN =
 const nextConfig: NextConfig = {
   transpilePackages: ["@aionix/shared"],
   poweredByHeader: false,
+  devIndicators: false,
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

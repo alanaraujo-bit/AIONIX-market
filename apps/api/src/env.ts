@@ -9,7 +9,8 @@ const envSchema = z.object({
   CORS_ORIGINS: z.string().default("http://localhost:3000,http://localhost:3001"),
   PUBLIC_API_URL: z.string().default("http://localhost:8080"),
   ADMIN_EMAIL: z.string().email().default("admin@aionix.market"),
-  ADMIN_PASSWORD: z.string().min(8).default("aionix-admin-2026"),
+  /** When set, the admin account password is kept in sync with this value at boot. */
+  ADMIN_PASSWORD: z.string().min(8).optional(),
   // Optional S3-compatible bucket (Railway Buckets). Falls back to Postgres storage.
   S3_ENDPOINT: z.string().optional(),
   S3_BUCKET: z.string().optional(),
