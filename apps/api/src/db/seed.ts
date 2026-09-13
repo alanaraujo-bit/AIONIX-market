@@ -32,7 +32,10 @@ async function fetchImage(url: string) {
 }
 
 async function main() {
-  const force = process.argv.includes("--reimage");
+  // --reimage reprocesses every image; --reimage=hortifruti,acougue limits it to those categories.
+  const reimageArg = process.argv.find((a) => a.startsWith("--reimage"));
+  const reimageOnly = reimageArg?.includes("=") ? new Set(reimageArg.split("=")[1]!.split(",")) : null;
+  const force = (p: { category: string }) => !!reimageArg && (!reimageOnly || reimageOnly.has(p.category));
   console.log("→ categories");
   const catBySlug = new Map<string, string>();
   for (const [i, c] of SEED_CATEGORIES.entries()) {
@@ -57,7 +60,7 @@ async function main() {
 
     let imageUrl = existing?.imageUrl ?? null;
     let blurDataUrl = existing?.blurDataUrl ?? null;
-    if (p.image && (!imageUrl || force)) {
+    if (p.image && (!imageUrl || force(p))) {
       const buf = await fetchImage(p.image);
       if (buf) {
         try {

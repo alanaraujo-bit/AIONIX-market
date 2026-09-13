@@ -50,7 +50,7 @@ async function sampleBackground(input: Buffer): Promise<[number, number, number]
   const uniform = samples.every((p) => p.every((v, c) => Math.abs(v - mean[c]!) < 18));
   const luma = 0.2126 * mean[0] + 0.7152 * mean[1] + 0.0722 * mean[2];
   const chroma = Math.max(...mean) - Math.min(...mean);
-  if (!uniform || luma < 175 || luma > 250 || chroma > 30) return null;
+  if (!uniform || luma < 175 || luma > 253 || chroma > 30) return null;
   return mean.map(Math.round) as [number, number, number];
 }
 
