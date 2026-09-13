@@ -1,5 +1,7 @@
 "use client";
 
+import { play, useSoundBridge } from "@/lib/sound";
+import { SoundAlerts } from "./sound-alerts";
 import { Boxes, Coins, ChevronRight, ImageIcon, LayoutDashboard, Leaf, LogOut, Megaphone, Menu, Package, Receipt, Settings, Tags, Users, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
@@ -61,6 +63,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   useAdminRealtime(!!user);
+  useSoundBridge();
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -94,7 +97,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <p className="truncate text-[13px] font-semibold text-white">{user.name}</p>
             <p className="truncate text-[11.5px] text-white/45">{user.email}</p>
           </div>
-          <button type="button" aria-label="Sair" onClick={() => logout.mutate(undefined, { onSuccess: () => router.replace("/login") })} className="grid size-8 place-items-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white">
+          <button type="button" aria-label="Sair" onClick={() => logout.mutate(undefined, { onSuccess: () => (play("goodbye"), router.replace("/login")) })} className="grid size-8 place-items-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white">
             <LogOut className="size-4" />
           </button>
         </div>
@@ -119,6 +122,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         )}
       </AnimatePresence>
 
+      <SoundAlerts />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center gap-3 border-b border-line bg-card/80 px-4 backdrop-blur lg:hidden">
           <Button variant="ghost" size="icon" aria-label="Menu" onClick={() => setMobileOpen(true)}>

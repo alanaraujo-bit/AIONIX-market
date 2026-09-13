@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useAddressMutations } from "@/lib/account";
+import { play } from "@/lib/sound";
 import { haptic, toast } from "@/lib/toast";
 import { Field, fieldErrors } from "./ui/field";
 import { Button, cn } from "./ui/primitives";
@@ -42,6 +43,7 @@ export function AddressForm({ address, onDone }: { address?: Address | null; onD
       const r = await api<{ street: string; district: string; city: string; state: string }>(`/me/cep/${cep.replace(/\D/g, "")}`);
       setForm((f) => ({ ...f, street: r.street || f.street, district: r.district || f.district, city: r.city, state: r.state }));
       haptic();
+      play("select");
       setTimeout(() => document.getElementById("addr-number")?.focus(), 50);
     } catch {
       /* user fills manually */
@@ -56,6 +58,7 @@ export function AddressForm({ address, onDone }: { address?: Address | null; onD
     if (!parsed.success) {
       setErrors(fieldErrors(parsed.error.issues.map((i) => ({ path: String(i.path[0]), message: i.message }))));
       haptic([20, 40, 20]);
+      play("error");
       return;
     }
     save.mutate(

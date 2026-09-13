@@ -1,5 +1,6 @@
 "use client";
 
+import { sound, type SoundName } from "@aionix/sound";
 import { create } from "zustand";
 
 export type ToastTone = "default" | "success" | "error";
@@ -9,6 +10,8 @@ export interface ToastItem {
   tone: ToastTone;
   description?: string;
   action?: { label: string; href?: string; onClick?: () => void };
+  /** Themed sound; defaults to success/error by tone, silent for plain toasts. */
+  sound?: SoundName | false;
 }
 
 interface ToastState {
@@ -22,13 +25,15 @@ export const useToasts = create<ToastState>((set, get) => ({
   toasts: [],
   push: (t) => {
     const id = ++seq;
+    const s = t.sound ?? (t.tone === "success" ? "success" : t.tone === "error" ? "error" : false);
+    if (s) sound.play(s);
     set((s) => ({ toasts: [...s.toasts.slice(-2), { ...t, id }] }));
     setTimeout(() => get().dismiss(id), t.tone === "error" ? 4200 : 3000);
   },
   dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((x) => x.id !== id) })),
 }));
 
-type Extra = Partial<Pick<ToastItem, "description" | "action">>;
+type Extra = Partial<Pick<ToastItem, "description" | "action" | "sound">>;
 export const toast = Object.assign(
   (message: string, extra?: Extra) => useToasts.getState().push({ message, tone: "default", ...extra }),
   {

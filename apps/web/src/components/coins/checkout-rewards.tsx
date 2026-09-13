@@ -9,7 +9,7 @@ import { cn } from "@/components/ui/primitives";
 import { Sheet } from "@/components/ui/sheet";
 import { applicableVouchers, coinLabel, useLoyaltyProgram, useSelectedVoucher, useWallet } from "@/lib/loyalty";
 import { useSession } from "@/lib/session";
-import { sfx } from "@/lib/sound";
+import { play } from "@/lib/sound";
 import { haptic } from "@/lib/toast";
 import { Coin } from "./coin";
 import { RewardArt } from "./reward-card";
@@ -120,7 +120,7 @@ export function VoucherPicker({ quote, className }: { quote: Quote | undefined; 
   return (
     <>
       <div className={cn("overflow-hidden rounded-[20px] bg-card shadow-card", className)}>
-        <button type="button" onClick={() => (haptic(), sfx.pop(), setOpen(true))} className="flex w-full items-center gap-3 p-3.5 text-left active:bg-line-2/60">
+        <button type="button" onClick={() => (haptic(), play("tap"), setOpen(true))} className="flex w-full items-center gap-3 p-3.5 text-left active:bg-line-2/60">
           <span className={cn("grid size-10 shrink-0 place-items-center rounded-2xl", selected ? "bg-coin-3 text-coin-ink" : "bg-coin-soft text-coin-2")}>
             <Ticket className="size-5" strokeWidth={2.3} />
           </span>
@@ -135,7 +135,7 @@ export function VoucherPicker({ quote, className }: { quote: Quote | undefined; 
               role="button"
               tabIndex={0}
               aria-label="Remover prêmio"
-              onClick={(e) => (e.stopPropagation(), haptic(), select(null))}
+              onClick={(e) => (e.stopPropagation(), haptic(), play("toggleOff"), select(null))}
               className="grid size-8 place-items-center rounded-full bg-line-2 text-ink-2"
             >
               <X className="size-4" strokeWidth={2.6} />
@@ -155,7 +155,7 @@ export function VoucherPicker({ quote, className }: { quote: Quote | undefined; 
                 active={v.id === redemptionId}
                 onPick={() => {
                   haptic([8, 30, 8]);
-                  sfx.coin();
+                  play(v.id === redemptionId ? "toggleOff" : "voucherApply");
                   select(v.id === redemptionId ? null : v.id);
                   setOpen(false);
                 }}

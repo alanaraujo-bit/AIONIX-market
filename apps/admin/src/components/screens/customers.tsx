@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Crown, Search, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useAdminMutation, useCustomers } from "@/lib/queries";
 import { CoinMark, CustomerCoinsDrawer } from "@/components/screens/loyalty";
 import { Badge, Button, Card, EmptyState, PageHeader, Skeleton, Switch, cn } from "@/components/ui";
@@ -21,7 +21,7 @@ export function CustomersScreen() {
   const { data, isPending, isFetching } = useCustomers({ q: debounced, page, pageSize: 30 });
   const setClub = useAdminMutation(
     ({ id, clubMember }: { id: string; clubMember: boolean }) => api(`/admin/customers/${id}`, { method: "PATCH", body: { clubMember } }),
-    { invalidate: [["admin", "customers"]], onSuccess: (_, v) => toast.success(v.clubMember ? "Cliente entrou no Clube" : "Cliente removido do Clube") },
+    { invalidate: [["admin", "customers"]], onSuccess: (_, v) => toast.success(v.clubMember ? "Cliente entrou no Clube" : "Cliente removido do Clube", { sound: v.clubMember ? "club" : "toggleOff" }) },
   );
   const [coinsFor, setCoinsFor] = useState<{ id: string; name: string } | null>(null);
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;

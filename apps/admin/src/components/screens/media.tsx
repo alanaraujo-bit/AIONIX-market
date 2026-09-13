@@ -1,9 +1,10 @@
 "use client";
 
+import { play } from "@/lib/sound";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, ImageIcon, UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { upload } from "@/lib/api";
 import { useMedia, type MediaItem } from "@/lib/queries";
 import { Button, Card, EmptyState, PageHeader, Skeleton, cn } from "@/components/ui";
@@ -37,6 +38,7 @@ export function MediaScreen() {
 
   const copy = async (m: MediaItem) => {
     await navigator.clipboard.writeText(m.url);
+    play("copy");
     setCopied(m.id);
     setTimeout(() => setCopied(null), 1500);
   };

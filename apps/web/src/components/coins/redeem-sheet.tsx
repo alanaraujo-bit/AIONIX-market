@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Button, cn } from "@/components/ui/primitives";
 import { Sheet } from "@/components/ui/sheet";
 import { coinLabel, useLoyaltyMutations, useLoyaltyProgram, useSelectedVoucher } from "@/lib/loyalty";
-import { sfx } from "@/lib/sound";
+import { play } from "@/lib/sound";
 import { haptic, toast } from "@/lib/toast";
 import { Coin } from "./coin";
 import { RewardArt } from "./reward-card";
@@ -69,14 +69,14 @@ export function RedeemSheet({ reward, balance, onClose }: { reward: Reward | nul
     if (!reward) return;
     haptic([8, 30, 8]);
     setSpending(true);
-    sfx.whoosh();
+    play("tap");
     redeem.mutate(reward.id, {
       onSuccess: ({ redemption }) => {
         setTimeout(() => {
           setDone(redemption);
           setSpending(false);
           haptic([10, 40, 10, 40, 30]);
-          sfx.success();
+          play("redeem");
         }, 650);
       },
       onError: (e) => {
@@ -90,7 +90,7 @@ export function RedeemSheet({ reward, balance, onClose }: { reward: Reward | nul
   const useNext = () => {
     if (!done) return;
     select(done.id);
-    sfx.pop();
+    play("voucherApply");
     onClose();
     router.push("/carrinho");
   };

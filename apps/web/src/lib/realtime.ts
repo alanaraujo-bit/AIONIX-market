@@ -1,7 +1,8 @@
 "use client";
 
 import { formatOrderNumber, orderStatusLabel, type OrderStatus } from "@aionix/shared";
-import { sfx } from "./sound";
+import type { SoundName } from "@aionix/sound";
+import { play } from "./sound";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { api } from "./api";
@@ -14,6 +15,23 @@ interface OrderEvent {
   number: number;
   status: OrderStatus;
   fulfillmentMethod?: "delivery" | "pickup";
+}
+
+function statusSound(e: OrderEvent): SoundName | null {
+  switch (e.status) {
+    case "confirmed":
+      return "orderConfirmed";
+    case "picking":
+      return "orderPicking";
+    case "out_for_delivery":
+      return e.fulfillmentMethod === "pickup" ? "orderReady" : "orderOnTheWay";
+    case "delivered":
+      return "orderDelivered";
+    case "cancelled":
+      return "orderCancelled";
+    default:
+      return null;
+  }
 }
 
 /**
@@ -46,12 +64,14 @@ export function RealtimeBridge() {
           void qc.invalidateQueries({ queryKey: ["orders"] });
           void qc.invalidateQueries({ queryKey: ["order", e.orderId] });
           haptic([10, 40, 10]);
-          if (e.fulfillmentMethod === "pickup" && e.status === "out_for_delivery") sfx.success();
+          const s = statusSound(e);
+          if (s) play(s);
           const onOrderPage = window.location.pathname === `/pedidos/${e.orderId}`;
           if (!onOrderPage) {
             toast(`Pedido ${formatOrderNumber(e.number)}`, {
               description: e.fulfillmentMethod === "pickup" && e.status === "out_for_delivery" ? "Seu pedido está pronto para retirada!" : orderStatusLabel(e.status, e.fulfillmentMethod),
               action: { label: "Ver", href: `/pedidos/${e.orderId}` },
+              sound: false,
             });
           }
         });

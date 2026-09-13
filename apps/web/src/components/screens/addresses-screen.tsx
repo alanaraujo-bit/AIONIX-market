@@ -78,7 +78,7 @@ export function AddressesScreen() {
             </Button>
           )}
           <Button variant="secondary" block size="lg" onClick={() => (setEditing(menu), setMenu(null))}>Editar</Button>
-          <Button variant="danger" block size="lg" loading={remove.isPending} onClick={() => menu && remove.mutate(menu.id, { onSuccess: () => (haptic([10, 30, 10]), setMenu(null), toast("Endereço removido")), onError: (e) => toast.error(e.message) })}>
+          <Button variant="danger" block size="lg" loading={remove.isPending} onClick={() => menu && remove.mutate(menu.id, { onSuccess: () => (haptic([10, 30, 10]), setMenu(null), toast("Endereço removido", { sound: "remove" })), onError: (e) => toast.error(e.message) })}>
             Excluir
           </Button>
         </div>

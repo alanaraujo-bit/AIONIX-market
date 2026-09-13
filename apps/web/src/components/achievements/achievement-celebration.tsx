@@ -15,7 +15,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { useAchievements } from "@/lib/achievements";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
-import { sfx } from "@/lib/sound";
+import { play } from "@/lib/sound";
 import { haptic } from "@/lib/toast";
 
 /** An invitation first: celebrations never take focus away from checkout. */
@@ -44,7 +44,7 @@ export function AchievementCelebration() {
   if (!host || !award || !browsing) return null;
   return createPortal(<>
     {!open && <aside className={styles.notice} aria-label="Nova conquista">
-      <button type="button" onClick={() => { acknowledge.reset(); setOpen(true); haptic([10, 40, 10, 40, 30]); sfx.success(); }}><Trophy size={28} className="shrink-0 text-club-gold-2" /><span><strong>{remaining > 1 ? `${remaining} novas conquistas!` : "Você conquistou uma medalha!"}</strong><small>{award.snapshot.title} · Toque para celebrar</small></span></button>
+      <button type="button" onClick={() => { acknowledge.reset(); setOpen(true); haptic([10, 40, 10, 40, 30]); play("achievement"); }}><Trophy size={28} className="shrink-0 text-club-gold-2" /><span><strong>{remaining > 1 ? `${remaining} novas conquistas!` : "Você conquistou uma medalha!"}</strong><small>{award.snapshot.title} · Toque para celebrar</small></span></button>
       <button type="button" aria-label="Ver em outro momento" className={styles.noticeClose} onClick={() => setHidden(query.data?.celebrations.map(a => a.id) ?? [])}><X size={18} /></button>
     </aside>}
     <Sheet open={open} onClose={() => setOpen(false)} title="Conquista desbloqueada">

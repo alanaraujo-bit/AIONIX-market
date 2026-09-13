@@ -1,9 +1,10 @@
 "use client";
 
+import { claimAlert, play } from "./sound";
 import { formatBRL, formatOrderNumber, orderStatusShort, type OrderStatus } from "@aionix/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { api } from "./api";
 
 interface OrderEvent {
@@ -13,28 +14,6 @@ interface OrderEvent {
   status: OrderStatus;
   fulfillmentMethod?: "delivery" | "pickup";
   totalCents: number;
-}
-
-let audioCtx: AudioContext | null = null;
-function chime() {
-  try {
-    audioCtx ??= new AudioContext();
-    const t = audioCtx.currentTime;
-    for (const [f, d] of [[880, 0], [1174, 0.12]] as const) {
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = "sine";
-      o.frequency.value = f;
-      g.gain.setValueAtTime(0.0001, t + d);
-      g.gain.exponentialRampToValueAtTime(0.12, t + d + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.35);
-      o.connect(g).connect(audioCtx.destination);
-      o.start(t + d);
-      o.stop(t + d + 0.4);
-    }
-  } catch {
-    /* autoplay blocked */
-  }
 }
 
 /** Live order feed for the whole admin: invalidates queries and announces new orders. */
@@ -63,17 +42,18 @@ export function useAdminRealtime(enabled: boolean) {
         es.addEventListener("order.created", (ev) => {
           const e = JSON.parse((ev as MessageEvent).data) as OrderEvent;
           invalidate();
-          chime();
+          if (claimAlert(`order:${e.orderId}`)) play("newOrder");
           toast.success(`Novo pedido ${formatOrderNumber(e.number)}`, {
             description: formatBRL(e.totalCents),
             action: { label: "Abrir", onClick: () => (window.location.href = `/pedidos/${e.orderId}`) },
             duration: 8000,
+            sound: false,
           });
         });
         es.addEventListener("order.updated", (ev) => {
           const e = JSON.parse((ev as MessageEvent).data) as OrderEvent;
           invalidate();
-          if (e.status === "cancelled") toast.warning(`Pedido ${formatOrderNumber(e.number)} cancelado pelo cliente`);
+          if (e.status === "cancelled") toast.warning(`Pedido ${formatOrderNumber(e.number)} cancelado pelo cliente`, { sound: "orderCancelled" });
           else toast(`${formatOrderNumber(e.number)} · ${orderStatusShort(e.status, e.fulfillmentMethod)}`);
         });
         es.onerror = () => {

@@ -46,7 +46,7 @@ export function AuthScreen({ next, initialMode }: { next: string; initialMode: "
     setErrors({});
     const done = (msg: string) => () => {
       haptic([8, 30, 8]);
-      toast.success(msg);
+      toast.success(msg, { sound: "welcome" });
       router.replace(next);
     };
     if (mode === "login") {

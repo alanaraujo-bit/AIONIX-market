@@ -15,6 +15,7 @@ import { BackButton, Screen } from "@/components/ui/screen";
 import { api } from "@/lib/api";
 import { cartCount, useCart, useCartQuantity, useHydrated } from "@/lib/cart";
 import { effectivePrice, useClub } from "@/lib/club";
+import { play } from "@/lib/sound";
 import { haptic, toast } from "@/lib/toast";
 import type { ProductDetail } from "@/lib/types";
 
@@ -31,7 +32,7 @@ function HeaderActions() {
             if (navigator.share) await navigator.share(data);
             else {
               await navigator.clipboard.writeText(data.url);
-              toast.success("Link copiado");
+              toast.success("Link copiado", { sound: "copy" });
             }
           } catch {
             /* dismissed */
@@ -100,6 +101,7 @@ export function ProductScreen({ slug, initial }: { slug: string; initial: Produc
   const cta = () => {
     if (!p) return;
     haptic([8, 30, 8]);
+    play("addToCart", { level: Math.max(0, qty - 1) });
     if (inCart > 0) setQuantity(p.id, qty);
     else add(p, qty, price ? { cents: price.cents, compareAt: price.compareAt, viaClub: price.viaClub } : undefined);
     setJustAdded(true);

@@ -3,28 +3,16 @@
 import { formatOrderNumber } from "@aionix/shared";
 import { useEffect, useRef } from "react";
 import { useWallet } from "@/lib/loyalty";
-import { unlockAudio } from "@/lib/sound";
 import { useCoinCelebration } from "./coin-celebration";
 
 /**
  * Glue between the wallet and the celebration: credits the shopper hasn't
  * been shown yet (order delivered while the app was closed, realtime credit,
- * admin bonus) trigger the coin shower exactly once. Also unlocks WebAudio on
- * the first gesture so feedback sounds can play later.
+ * admin bonus) trigger the coin shower exactly once.
  */
 export function CoinBridge() {
   const wallet = useWallet();
   const shown = useRef(new Set<string>());
-
-  useEffect(() => {
-    const unlock = () => unlockAudio();
-    window.addEventListener("pointerdown", unlock, { passive: true });
-    window.addEventListener("keydown", unlock);
-    return () => {
-      window.removeEventListener("pointerdown", unlock);
-      window.removeEventListener("keydown", unlock);
-    };
-  }, []);
 
   useEffect(() => {
     const unseen = wallet.data?.unseen.filter((u) => !shown.current.has(u.id)) ?? [];

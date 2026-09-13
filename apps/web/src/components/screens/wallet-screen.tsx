@@ -15,7 +15,7 @@ import { Screen, TopBar } from "@/components/ui/screen";
 import { Sheet } from "@/components/ui/sheet";
 import { applicableVouchers, coinLabel, useLoyaltyMutations, useLoyaltyProgram, useWallet } from "@/lib/loyalty";
 import { useSession } from "@/lib/session";
-import { sfx, useSoundPrefs } from "@/lib/sound";
+import { play, sfx, useSoundPrefs } from "@/lib/sound";
 import { haptic, toast } from "@/lib/toast";
 
 function Rolling({ value }: { value: number }) {
@@ -118,7 +118,6 @@ export function WalletScreen() {
       aria-label={sound.enabled ? "Desativar sons" : "Ativar sons"}
       onClick={() => {
         sound.setEnabled(!sound.enabled);
-        if (!sound.enabled) setTimeout(() => sfx.coin(), 50);
         haptic();
       }}
       className="grid size-10 place-items-center rounded-full bg-card text-ink shadow-card ring-1 ring-line/70"
@@ -246,7 +245,7 @@ export function WalletScreen() {
                     <VoucherCard
                       key={v.id}
                       v={v}
-                      onUse={() => { select(v.id); sfx.pop(); haptic(); router.push("/carrinho"); }}
+                      onUse={() => { select(v.id); play("voucherApply"); haptic(); router.push("/carrinho"); }}
                       onReturn={() => setReturning(v)}
                       onShow={() => setShowCode(v)}
                     />
@@ -259,7 +258,7 @@ export function WalletScreen() {
           {/* Tabs */}
           <div className="flex gap-1 rounded-full bg-line-2 p-1">
             {(["rewards", "history"] as const).map((t) => (
-              <button key={t} type="button" onClick={() => (setTab(t), haptic())} className={cn("relative flex-1 rounded-full py-2 text-[13.5px] font-bold transition-colors", tab === t ? "text-ink" : "text-muted")}>
+              <button key={t} type="button" onClick={() => (t !== tab && play("tap"), setTab(t), haptic())} className={cn("relative flex-1 rounded-full py-2 text-[13.5px] font-bold transition-colors", tab === t ? "text-ink" : "text-muted")}>
                 {tab === t && <motion.span layoutId="wallet-tab" className="absolute inset-0 rounded-full bg-card shadow-card" transition={{ type: "spring", stiffness: 500, damping: 36 }} />}
                 <span className="relative">{t === "rewards" ? "Prêmios" : "Histórico"}</span>
               </button>
@@ -271,7 +270,7 @@ export function WalletScreen() {
               <div className="grid grid-cols-2 gap-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[190px] rounded-[22px]" />)}</div>
             ) : p?.rewards.length ? (
               <div className="grid grid-cols-2 gap-3">
-                {p.rewards.map((r, i) => <RewardCard key={r.id} reward={r} balance={balance} index={i} onSelect={(x) => (haptic(), sfx.pop(), setSelected(x))} />)}
+                {p.rewards.map((r, i) => <RewardCard key={r.id} reward={r} balance={balance} index={i} onSelect={(x) => (haptic(), play("tap"), setSelected(x))} />)}
               </div>
             ) : (
               <EmptyState icon={<Gift className="size-9" />} title="Prêmios em breve" description="A loja ainda está montando a vitrine de prêmios. Suas moedas continuam valendo." />

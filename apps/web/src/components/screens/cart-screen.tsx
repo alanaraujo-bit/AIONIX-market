@@ -15,6 +15,7 @@ import { cartCount, cartSavings, cartTotal, useCart, useHydrated, type CartItem 
 import { useCartQuote } from "@/lib/quote";
 import { useClub } from "@/lib/club";
 import { useSession } from "@/lib/session";
+import { play } from "@/lib/sound";
 import { haptic, toast } from "@/lib/toast";
 
 function CartRow({ item }: { item: CartItem }) {
@@ -28,9 +29,10 @@ function CartRow({ item }: { item: CartItem }) {
     const snapshot = item;
     remove(item.productId);
     toast(`${item.name} removido`, {
+      sound: "removeItem",
       action: {
         label: "Desfazer",
-        onClick: () => restore(snapshot),
+        onClick: () => (restore(snapshot), play("undo")),
       },
     });
   };
@@ -84,7 +86,7 @@ function CartRow({ item }: { item: CartItem }) {
             <div className="flex h-9 items-center rounded-full bg-canvas ring-1 ring-line">
               <Pressable
                 aria-label="Diminuir"
-                onClick={() => (item.quantity === 1 ? removeWithUndo() : (haptic(6), setQuantity(item.productId, item.quantity - 1)))}
+                onClick={() => (item.quantity === 1 ? removeWithUndo() : (haptic(6), play("stepDown", { level: item.quantity - 2 }), setQuantity(item.productId, item.quantity - 1)))}
                 className="grid size-9 place-items-center text-ink-2"
               >
                 {item.quantity === 1 ? <Trash2 className="size-[15px]" /> : <Minus className="size-4" strokeWidth={2.6} />}
@@ -97,7 +99,7 @@ function CartRow({ item }: { item: CartItem }) {
               <Pressable
                 aria-label="Aumentar"
                 disabled={item.quantity >= item.stock}
-                onClick={() => (haptic(), setQuantity(item.productId, item.quantity + 1))}
+                onClick={() => (haptic(), play("stepUp", { level: item.quantity }), setQuantity(item.productId, item.quantity + 1))}
                 className="grid size-9 place-items-center text-ink-2 disabled:text-faint"
               >
                 <Plus className="size-4" strokeWidth={2.6} />
@@ -187,7 +189,7 @@ export function CartScreen() {
           title="Carrinho"
           subtitle={`${count} ${count === 1 ? "item" : "itens"}`}
           right={
-            <button type="button" onClick={() => (haptic(), clear())} className="mb-1 text-[13.5px] font-semibold text-sale active:opacity-60">
+            <button type="button" onClick={() => (haptic(), play("clearCart"), clear())} className="mb-1 text-[13.5px] font-semibold text-sale active:opacity-60">
               Limpar
             </button>
           }

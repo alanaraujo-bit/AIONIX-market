@@ -1,5 +1,6 @@
 "use client";
 
+import { play } from "@/lib/sound";
 import clsx from "clsx";
 import { Loader2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -94,6 +95,7 @@ export function Switch({ checked, onChange, label, disabled }: { checked: boolea
       disabled={disabled}
       onClick={(e) => {
         e.stopPropagation();
+        play(checked ? "toggleOff" : "toggleOn");
         onChange(!checked);
       }}
       className="inline-flex items-center gap-2.5 disabled:opacity-50"

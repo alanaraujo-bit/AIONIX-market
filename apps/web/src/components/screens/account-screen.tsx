@@ -2,10 +2,10 @@
 
 import { formatBRL, formatPhone, profileSchema } from "@aionix/shared";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, Crown, Leaf, LogOut, MapPin, Receipt, Sparkles, UserRound } from "lucide-react";
+import { ChevronRight, Crown, Leaf, LogOut, MapPin, Receipt, Sparkles, UserRound, Volume2, VolumeX } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useClubSheet } from "@/components/club/club-sheet";
 import { Coin } from "@/components/coins/coin";
 import { Field, fieldErrors } from "@/components/ui/field";
@@ -15,6 +15,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { api } from "@/lib/api";
 import { useMe } from "@/lib/account";
 import { useAuthActions, useSession } from "@/lib/session";
+import { play, useSoundPrefs } from "@/lib/sound";
 import { haptic, toast } from "@/lib/toast";
 
 function initials(name: string) {
@@ -25,6 +26,8 @@ function initials(name: string) {
     .map((p) => p[0]!.toUpperCase())
     .join("");
 }
+
+const noopSubscribe = () => () => {};
 
 export function AccountScreen() {
   const { user, loading } = useSession();
@@ -38,6 +41,16 @@ export function AccountScreen() {
   useEffect(() => {
     if (user) setForm({ name: user.name, phone: user.phone ?? "" });
   }, [user]);
+
+  // Persisted preference is read after mount so server and client HTML match.
+  const soundPrefs = useSoundPrefs();
+  const soundReady = useSyncExternalStore(noopSubscribe, () => true, () => false);
+  const soundOn = soundReady && soundPrefs.enabled;
+  const toggleSound = () => {
+    haptic();
+    if (soundOn) play("toggleOff");
+    soundPrefs.setEnabled(!soundOn);
+  };
 
   const save = useMutation({
     mutationFn: () => api("/me", { method: "PATCH", body: form }),
@@ -200,11 +213,26 @@ export function AccountScreen() {
           ))}
         </section>
 
+        <section className="overflow-hidden rounded-[22px] bg-card shadow-card">
+          <button type="button" role="switch" aria-checked={soundOn} onClick={toggleSound} className="flex w-full items-center gap-3.5 px-4 py-3.5 text-left active:bg-line-2/60">
+            <span className="grid size-10 place-items-center rounded-2xl bg-brand-soft text-brand">
+              {soundOn ? <Volume2 className="size-5" strokeWidth={2.2} /> : <VolumeX className="size-5" strokeWidth={2.2} />}
+            </span>
+            <span className="flex-1">
+              <span className="block text-[14.5px] font-bold">Sons</span>
+              <span className="block text-[12.5px] text-muted">{soundOn ? "Toques e avisos sonoros ligados" : "Desligados — só vibração e animações"}</span>
+            </span>
+            <span className={`relative h-[26px] w-[44px] shrink-0 rounded-full transition-colors ${soundOn ? "bg-brand" : "bg-line"}`}>
+              <span className="absolute top-[3px] size-5 rounded-full bg-white shadow transition-[left] duration-200" style={{ left: soundOn ? 21 : 3 }} />
+            </span>
+          </button>
+        </section>
+
         <Button
           variant="secondary"
           block
           loading={logout.isPending}
-          onClick={() => logout.mutate(undefined, { onSuccess: () => toast("Até logo!") })}
+          onClick={() => logout.mutate(undefined, { onSuccess: () => toast("Até logo!", { sound: "goodbye" }) })}
           className="!text-sale"
         >
           <LogOut className="size-4" /> Sair da conta

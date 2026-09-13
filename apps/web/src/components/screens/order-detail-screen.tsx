@@ -31,7 +31,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
       void qc.invalidateQueries({ queryKey: ["orders"] });
       setConfirmCancel(false);
       haptic([10, 30, 10]);
-      toast("Pedido cancelado", { description: "O estoque foi devolvido à loja." });
+      toast("Pedido cancelado", { description: "O estoque foi devolvido à loja.", sound: "orderCancelled" });
     },
     onError: (e) => toast.error(e.message),
   });
@@ -60,7 +60,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
     },
     onSuccess: (n) => {
       haptic([8, 30, 8]);
-      toast.success(`${n} ${n === 1 ? "item adicionado" : "itens adicionados"} ao carrinho`);
+      toast.success(`${n} ${n === 1 ? "item adicionado" : "itens adicionados"} ao carrinho`, { sound: "addToCart" });
       router.push("/carrinho");
     },
     onError: (e) => toast.error(e.message),

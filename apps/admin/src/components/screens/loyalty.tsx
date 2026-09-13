@@ -275,7 +275,7 @@ function RewardForm({ reward, onClose }: { reward: AdminReward | null; onClose: 
     (input: unknown) => (reward ? api(`/admin/loyalty/rewards/${reward.id}`, { method: "PUT", body: input }) : api("/admin/loyalty/rewards", { body: input })),
     { invalidate: [["admin", "loyalty"]], success: reward ? "Prêmio atualizado" : "Prêmio criado", onSuccess: onClose },
   );
-  const remove = useAdminMutation(() => api(`/admin/loyalty/rewards/${reward!.id}`, { method: "DELETE" }), { invalidate: [["admin", "loyalty"]], success: "Prêmio excluído", onSuccess: onClose });
+  const remove = useAdminMutation(() => api(`/admin/loyalty/rewards/${reward!.id}`, { method: "DELETE" }), { sound: "remove", invalidate: [["admin", "loyalty"]], success: "Prêmio excluído", onSuccess: onClose });
 
   const submit = () => {
     const payload = {
@@ -443,6 +443,7 @@ function VouchersTab() {
   }, [q]);
   const { data, isPending } = useRedemptions({ status: status || undefined, q: debounced || undefined, pageSize: "60" });
   const use = useAdminMutation((c: string) => api<{ redemption: Redemption }>("/admin/loyalty/redemptions/use", { body: { code: c } }), {
+    sound: "voucherApply",
     invalidate: [["admin", "loyalty"]],
     success: (d) => `Brinde entregue: ${d.redemption.reward.name}`,
     onSuccess: () => setCode(""),
@@ -515,6 +516,7 @@ export function CustomerCoinsDrawer({ customer, onClose }: { customer: { id: str
   const [coins, setCoins] = useState("");
   const [note, setNote] = useState("");
   const adjust = useAdminMutation((body: { coins: number; note: string }) => api(`/admin/loyalty/customers/${customer!.id}/coins`, { body }), {
+    sound: "coin",
     invalidate: [["admin", "loyalty"], ["admin", "customers"]],
     success: "Saldo ajustado",
     onSuccess: () => (setCoins(""), setNote("")),

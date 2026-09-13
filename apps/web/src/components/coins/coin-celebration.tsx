@@ -192,7 +192,6 @@ export function CoinCelebration() {
                 block
                 className="!bg-coin-3 !text-coin-ink shadow-[0_12px_32px_-10px_rgb(245_176_58/0.8)]"
                 onClick={() => {
-                  sfx.pop();
                   close();
                   router.push("/moedas");
                 }}

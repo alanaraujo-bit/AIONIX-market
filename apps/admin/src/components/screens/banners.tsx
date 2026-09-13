@@ -58,7 +58,7 @@ function BannerForm({ banner, onClose }: { banner: AdminBanner | null; onClose: 
     (input: unknown) => (banner ? api(`/admin/banners/${banner.id}`, { method: "PUT", body: input }) : api("/admin/banners", { body: input })),
     { invalidate: [["admin", "banners"]], success: banner ? "Banner atualizado" : "Banner criado", onSuccess: onClose },
   );
-  const remove = useAdminMutation(() => api(`/admin/banners/${banner!.id}`, { method: "DELETE" }), { invalidate: [["admin", "banners"]], success: "Banner excluído", onSuccess: onClose });
+  const remove = useAdminMutation(() => api(`/admin/banners/${banner!.id}`, { method: "DELETE" }), { sound: "remove", invalidate: [["admin", "banners"]], success: "Banner excluído", onSuccess: onClose });
   const submit = () => {
     const payload = { ...form, promotionId: form.promotionId || null, categoryId: form.categoryId || null, startsAt: form.startsAt ? new Date(form.startsAt) : null, endsAt: form.endsAt ? new Date(form.endsAt) : null };
     const parsed = bannerInputSchema.safeParse(payload);

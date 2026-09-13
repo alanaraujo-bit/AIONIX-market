@@ -2,7 +2,7 @@
 
 import { ImagePlus, Loader2, Trash2, UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { upload } from "@/lib/api";
 import { useMedia, type MediaItem } from "@/lib/queries";

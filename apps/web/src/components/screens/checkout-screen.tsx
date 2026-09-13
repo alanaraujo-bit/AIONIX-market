@@ -18,7 +18,7 @@ import { useAddresses } from "@/lib/account";
 import { useCart, useHydrated } from "@/lib/cart";
 import { coinLabel, useLoyaltyProgram, useSelectedVoucher } from "@/lib/loyalty";
 import { useCartQuote } from "@/lib/quote";
-import { sfx } from "@/lib/sound";
+import { play, sfx } from "@/lib/sound";
 import { useSession } from "@/lib/session";
 import { haptic, toast } from "@/lib/toast";
 import type { HomeData } from "@/lib/types";
@@ -101,6 +101,7 @@ export function CheckoutScreen() {
     mutationFn: (input: CheckoutInput) => api<{ order: Order }>("/me/orders", { body: input }),
     onSuccess: ({ order }) => {
       haptic([10, 40, 10, 40, 30]);
+      play("orderPlaced");
       setPlaced(order);
       clear();
       selectVoucher(null);
@@ -168,7 +169,7 @@ export function CheckoutScreen() {
           {store.data?.pickupEnabled && (
             <div className="mb-3 grid grid-cols-2 gap-2" role="group" aria-label="Forma de recebimento">
               {(["delivery", "pickup"] as const).map((method) => (
-                <button key={method} type="button" aria-pressed={fulfillmentMethod === method} onClick={() => setFulfillmentMethod(method)} className={cn("min-h-12 rounded-2xl px-3 py-3 text-[13px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand", fulfillmentMethod === method ? "bg-brand text-white" : "bg-card text-ink ring-1 ring-line")}>
+                <button key={method} type="button" aria-pressed={fulfillmentMethod === method} onClick={() => (method !== fulfillmentMethod && (haptic(), play("tap")), setFulfillmentMethod(method))} className={cn("min-h-12 rounded-2xl px-3 py-3 text-[13px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand", fulfillmentMethod === method ? "bg-brand text-white" : "bg-card text-ink ring-1 ring-line")}>
                   {method === "pickup" ? "Retirar na loja · grátis" : "Receber em casa"}
                 </button>
               ))}
@@ -220,7 +221,7 @@ export function CheckoutScreen() {
               <button
                 key={s.id}
                 type="button"
-                onClick={() => (haptic(), setSlot(s.id))}
+                onClick={() => (haptic(), play("tap"), setSlot(s.id))}
                 className={cn(
                   "shrink-0 rounded-[18px] px-4 py-3 text-left transition-colors",
                   slot === s.id ? "bg-ink text-white" : "bg-card text-ink ring-1 ring-line",
@@ -241,7 +242,7 @@ export function CheckoutScreen() {
               <button
                 key={p.id}
                 type="button"
-                onClick={() => (haptic(), setPayment(p.id))}
+                onClick={() => (haptic(), play("tap"), setPayment(p.id))}
                 className={cn("flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-line-2/60", i > 0 && "border-t border-line-2")}
               >
                 <span className={cn("grid size-10 shrink-0 place-items-center rounded-2xl transition-colors", payment === p.id ? "bg-brand text-white" : "bg-line-2 text-ink-2")}>{p.icon}</span>
@@ -310,7 +311,7 @@ export function CheckoutScreen() {
         <ul className="space-y-2.5 pb-2">
           {addresses.data?.map((a) => (
             <li key={a.id}>
-              <button type="button" onClick={() => (setAddressId(a.id), setSheet("none"), haptic())} className={cn("flex w-full items-start gap-3 rounded-[18px] bg-card p-4 text-left ring-2 transition-colors", a.id === addressId ? "ring-brand" : "ring-transparent shadow-card")}>
+              <button type="button" onClick={() => (setAddressId(a.id), setSheet("none"), haptic(), play("select"))} className={cn("flex w-full items-start gap-3 rounded-[18px] bg-card p-4 text-left ring-2 transition-colors", a.id === addressId ? "ring-brand" : "ring-transparent shadow-card")}>
                 <MapPin className={cn("mt-0.5 size-5 shrink-0", a.id === addressId ? "text-brand" : "text-muted")} />
                 <span className="min-w-0 flex-1">
                   <span className="block text-[14px] font-bold">{a.label}</span>
@@ -338,7 +339,7 @@ function SuccessCoins({ order }: { order: Order }) {
   const p = program.data;
   useEffect(() => {
     if (order.coinsEarned > 0) {
-      const t = setTimeout(() => sfx.coin(), 900);
+      const t = setTimeout(() => sfx.coin(), 1400);
       return () => clearTimeout(t);
     }
   }, [order.coinsEarned]);

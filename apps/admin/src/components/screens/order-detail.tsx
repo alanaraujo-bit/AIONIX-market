@@ -1,5 +1,6 @@
 "use client";
 
+import { play, statusSound } from "@/lib/sound";
 import { formatBRL, formatOrderNumber, nextOrderStatus, orderFlow, ORDER_STATUS_LABEL, orderStatusLabel, PAYMENT_METHOD_LABEL, type OrderStatus } from "@aionix/shared";
 import { ArrowRight, Clock3, MapPin, Phone, Printer, User, Wallet, XCircle } from "lucide-react";
 import { useState } from "react";
@@ -15,7 +16,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
   const [note, setNote] = useState("");
   const update = useAdminMutation(
     ({ status, note }: { status: OrderStatus; note?: string }) => api(`/admin/orders/${id}/status`, { method: "PATCH", body: { status, note } }),
-    { invalidate: [["admin", "order", id], ["admin", "orders"], ["admin", "dashboard"], ["admin", "products"]], success: "Pedido atualizado", onSuccess: () => setNote("") },
+    { invalidate: [["admin", "order", id], ["admin", "orders"], ["admin", "dashboard"], ["admin", "products"]], success: "Pedido atualizado", sound: false, onSuccess: (_, v) => (setNote(""), play(statusSound(v.status, order?.fulfillmentMethod))) },
   );
 
   if (isPending || !order) {

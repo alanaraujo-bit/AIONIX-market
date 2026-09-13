@@ -37,7 +37,7 @@ function PromotionForm({ promo, onClose }: { promo: AdminPromotion | null; onClo
     (input: unknown) => (promo ? api(`/admin/promotions/${promo.id}`, { method: "PUT", body: input }) : api("/admin/promotions", { body: input })),
     { invalidate: [["admin", "promotions"], ["admin", "products"]], success: promo ? "Campanha atualizada" : "Campanha criada", onSuccess: onClose },
   );
-  const remove = useAdminMutation(() => api(`/admin/promotions/${promo!.id}`, { method: "DELETE" }), { invalidate: [["admin", "promotions"], ["admin", "products"]], success: "Campanha excluída", onSuccess: onClose });
+  const remove = useAdminMutation(() => api(`/admin/promotions/${promo!.id}`, { method: "DELETE" }), { sound: "remove", invalidate: [["admin", "promotions"], ["admin", "products"]], success: "Campanha excluída", onSuccess: onClose });
 
   const toggle = (set: "productIds" | "categoryIds", id: string) =>
     setForm((f) => {

@@ -1,8 +1,10 @@
 "use client";
 
+import { play } from "./sound";
+import type { SoundName } from "@aionix/sound";
 import type { Order, Paginated, Product, StoreSettings } from "@aionix/shared";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { api, qs } from "./api";
 
 // ---- Types returned by admin endpoints ------------------------------------
@@ -154,14 +156,15 @@ export const useSettings = () =>
 /** Generic mutation with cache invalidation + toasts. */
 export function useAdminMutation<TVars, TData = unknown>(
   fn: (vars: TVars) => Promise<TData>,
-  opts: { invalidate: string[][]; success?: string | ((d: TData) => string); onSuccess?: (d: TData, v: TVars) => void },
+  opts: { invalidate: string[][]; success?: string | ((d: TData) => string); sound?: SoundName | false; onSuccess?: (d: TData, v: TVars) => void },
 ) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: fn,
     onSuccess: (d, v) => {
       for (const key of opts.invalidate) void qc.invalidateQueries({ queryKey: key });
-      if (opts.success) toast.success(typeof opts.success === "function" ? opts.success(d) : opts.success);
+      if (opts.success) toast.success(typeof opts.success === "function" ? opts.success(d) : opts.success, { sound: opts.sound ?? "success" });
+      else if (opts.sound) play(opts.sound);
       opts.onSuccess?.(d, v);
     },
     onError: (err) => toast.error(err.message),

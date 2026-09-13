@@ -1,10 +1,11 @@
 "use client";
 
+import { play } from "@/lib/sound";
 import { Eye, EyeOff, Leaf, Loader2, ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useAuth, useSession } from "@/lib/session";
 
 export function LoginScreen() {
@@ -49,7 +50,7 @@ export function LoginScreen() {
             e.preventDefault();
             login.mutate(
               { email, password },
-              { onSuccess: () => router.replace("/dashboard"), onError: (err) => toast.error(err.message) },
+              { onSuccess: () => (play("welcome"), router.replace("/dashboard")), onError: (err) => toast.error(err.message) },
             );
           }}
           className="w-full max-w-sm"

@@ -5,6 +5,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCart, useCartQuantity, useHydrated } from "@/lib/cart";
 import { useEffectivePrice } from "@/lib/club";
+import { play } from "@/lib/sound";
 import { haptic, toast } from "@/lib/toast";
 import { cn } from "../ui/primitives";
 
@@ -34,11 +35,13 @@ export function AddToCart({ product, size = "md" }: { product: Product; size?: "
       return;
     }
     haptic();
+    play(quantity === 0 ? "addToCart" : "stepUp", { level: quantity });
     if (quantity === 0) add(product, 1, { cents: price.cents, compareAt: price.compareAt, viaClub: price.viaClub });
     else setQuantity(product.id, quantity + 1);
   };
   const dec = () => {
     haptic(6);
+    play(quantity === 1 ? "removeItem" : "stepDown", { level: quantity - 2 });
     setQuantity(product.id, quantity - 1);
   };
 

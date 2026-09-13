@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { settingsSchema, type StoreSettings } from "@aionix/shared";
-import { Save, Store } from "lucide-react";
+import { ChevronRight, Save, Store, Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useAdminMutation, useSettings } from "@/lib/queries";
@@ -59,6 +60,14 @@ export function SettingsScreen() {
           <p className="mt-3 text-[12px] text-muted">Lembre de salvar para aplicar.</p>
         </Card>
       </div>
+      <Link href="/configuracoes/sons" className="group mt-4 flex items-center gap-4 rounded-2xl border border-line bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-md">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand"><Volume2 className="size-5" strokeWidth={2.3} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-[15px] font-bold">Sons e alertas</span>
+          <span className="block text-[13px] text-muted">Alerta de novo pedido, lembrete de pedidos aguardando, volume e a coleção de sons do app e do painel</span>
+        </span>
+        <ChevronRight className="size-5 text-faint transition-transform group-hover:translate-x-0.5" />
+      </Link>
     </>
   );
 }

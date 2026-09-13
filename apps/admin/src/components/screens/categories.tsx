@@ -1,5 +1,6 @@
 "use client";
 
+import { play } from "@/lib/sound";
 import { categoryInputSchema, type CategoryInput } from "@aionix/shared";
 import { closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -37,7 +38,7 @@ function CategoryForm({ category, onClose }: { category: AdminCategory | null; o
     (input: CategoryInput) => (category ? api(`/admin/categories/${category.id}`, { method: "PUT", body: input }) : api("/admin/categories", { body: input })),
     { invalidate: [["admin", "categories"]], success: category ? "Categoria atualizada" : "Categoria criada", onSuccess: onClose },
   );
-  const remove = useAdminMutation(() => api(`/admin/categories/${category!.id}`, { method: "DELETE" }), { invalidate: [["admin", "categories"]], success: "Categoria excluída", onSuccess: onClose });
+  const remove = useAdminMutation(() => api(`/admin/categories/${category!.id}`, { method: "DELETE" }), { sound: "remove", invalidate: [["admin", "categories"]], success: "Categoria excluída", onSuccess: onClose });
   const submit = () => {
     const parsed = categoryInputSchema.safeParse(form);
     if (!parsed.success) return setErrors(fieldErrors(parsed.error.issues.map((i) => ({ path: String(i.path[0]), message: i.message }))));
@@ -84,6 +85,7 @@ export function CategoriesScreen() {
     if (!over || active.id === over.id) return;
     const next = arrayMove(order, order.findIndex((c) => c.id === active.id), order.findIndex((c) => c.id === over.id));
     setOrder(next);
+    play("select");
     reorder.mutate(next.map((c) => c.id));
   };
 

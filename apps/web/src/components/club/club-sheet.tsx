@@ -9,6 +9,7 @@ import { create } from "zustand";
 import { Button, cn } from "@/components/ui/primitives";
 import { Sheet } from "@/components/ui/sheet";
 import { effectivePrice, useClub } from "@/lib/club";
+import { play } from "@/lib/sound";
 import { haptic } from "@/lib/toast";
 
 const PENDING_KEY = "club:pending-signup";
@@ -104,6 +105,7 @@ export function ClubSheet() {
         sessionStorage.removeItem(PENDING_KEY);
         if (user.clubMember) {
           haptic([10, 40, 20, 60]);
+          play("club");
           useClubSheet.getState().show(null, { celebrate: true });
         }
       }

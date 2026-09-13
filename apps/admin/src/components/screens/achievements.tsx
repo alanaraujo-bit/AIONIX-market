@@ -4,7 +4,7 @@ import { achievementInputSchema, achievementMetrics, formatBRL, type Achievement
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Archive, ShoppingBasket, CalendarDays, Check, ChevronLeft, ChevronRight, Coins, Compass, Crown, Gift, Heart, Leaf, Pencil, Plus, Rocket, Sparkles, Star, Trophy, Users, X, type LucideIcon } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { api, qs } from "@/lib/api";
 import { Badge, Button, ConfirmDialog, Drawer, EmptyState, Input, PageHeader, Select, Skeleton, Switch, Textarea } from "@/components/ui";
 
