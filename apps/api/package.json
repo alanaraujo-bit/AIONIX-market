@@ -1,0 +1,42 @@
+{
+  "name": "@aionix/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist",
+    "drizzle"
+  ],
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:seed": "tsx --env-file-if-exists=.env src/db/seed.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@aionix/shared": "workspace:*",
+    "@aws-sdk/client-s3": "^3.1131.0",
+    "@fastify/cookie": "^11.1.2",
+    "@fastify/cors": "^11.3.0",
+    "@fastify/multipart": "^10.1.1",
+    "@fastify/rate-limit": "^11.2.0",
+    "@node-rs/argon2": "^2.2.1",
+    "drizzle-orm": "^0.45.2",
+    "fastify": "^5.12.4",
+    "jose": "^6.2.12",
+    "postgres": "^3.4.9",
+    "sharp": "^0.35.4",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "drizzle-kit": "^0.31.10",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0"
+  }
+}
