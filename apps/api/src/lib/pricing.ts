@@ -1,4 +1,4 @@
-import type { Product, Quote, QuoteLine } from "@aionix/shared";
+import type { Product, Quote, QuoteLine, StoreSettings } from "@aionix/shared";
 import { and, eq, gte, inArray, lte } from "drizzle-orm";
 import { db, schema } from "../db/client";
 import { getSettings } from "./settings";
@@ -65,9 +65,13 @@ export interface PriceResult {
   promotionName: string | null;
 }
 
+/** Maximum effective discount, whatever the campaign type (mirrors the 90% cap in `promotionInputSchema`). */
+export const MAX_DISCOUNT_RATIO = 0.9;
+
 export function applyDiscount(price: number, type: "percent" | "fixed", value: number) {
   const discounted = type === "percent" ? Math.round(price * (1 - value / 100)) : price - value;
-  return Math.max(1, discounted);
+  const floor = Math.max(1, Math.ceil(price * (1 - MAX_DISCOUNT_RATIO)));
+  return Math.max(floor, discounted);
 }
 
 /** Picks the promotion that yields the lowest price for a product. */
@@ -126,11 +130,26 @@ export interface PricedLine extends QuoteLine {
   promotionId: string | null;
 }
 
-/** Authoritative cart pricing. Unknown/inactive products are dropped. */
-export async function quoteCart(items: { productId: string; quantity: number }[]) {
-  const settings = await getSettings();
+export type PricedQuote = Omit<Quote, "lines"> & { lines: PricedLine[] };
+
+export const MAX_LINE_QUANTITY = 99;
+
+/** Merges duplicate lines and caps quantities; order of first appearance is kept. */
+export function mergeCartItems(items: { productId: string; quantity: number }[]) {
   const merged = new Map<string, number>();
-  for (const i of items) merged.set(i.productId, Math.min(99, (merged.get(i.productId) ?? 0) + i.quantity));
+  for (const i of items) {
+    merged.set(i.productId, Math.min(MAX_LINE_QUANTITY, (merged.get(i.productId) ?? 0) + i.quantity));
+  }
+  return merged;
+}
+
+type QuotableProduct = PriceableProduct & Pick<ProductRow, "name" | "imageUrl" | "unitLabel" | "stock">;
+type QuoteSettings = Pick<StoreSettings, "deliveryFeeCents" | "freeDeliveryThresholdCents" | "minimumOrderCents">;
+
+/** Authoritative cart pricing. Unknown/inactive products are dropped. */
+export async function quoteCart(items: { productId: string; quantity: number }[]): Promise<PricedQuote> {
+  const settings = await getSettings();
+  const merged = mergeCartItems(items);
   const ids = [...merged.keys()];
   const [rows, promos] = await Promise.all([
     ids.length
@@ -141,6 +160,16 @@ export async function quoteCart(items: { productId: string; quantity: number }[]
       : Promise.resolve([] as ProductRow[]),
     getActivePromotions(),
   ]);
+  return buildQuote(merged, rows, promos, settings);
+}
+
+/** Pure quote math: subtotal at list price, discount from promotions, delivery fee from settings. */
+export function buildQuote(
+  merged: Map<string, number>,
+  rows: QuotableProduct[],
+  promos: ActivePromotion[],
+  settings: QuoteSettings,
+): PricedQuote {
   const byId = new Map(rows.map((r) => [r.id, r]));
 
   const lines: PricedLine[] = [];
@@ -169,7 +198,7 @@ export async function quoteCart(items: { productId: string; quantity: number }[]
   const deliveryFeeCents =
     lines.length === 0 || net >= settings.freeDeliveryThresholdCents ? 0 : settings.deliveryFeeCents;
 
-  const quote: Omit<Quote, "lines"> & { lines: PricedLine[] } = {
+  return {
     lines,
     subtotalCents,
     discountCents,
@@ -179,5 +208,4 @@ export async function quoteCart(items: { productId: string; quantity: number }[]
     minimumOrderCents: settings.minimumOrderCents,
     itemCount: lines.reduce((s, l) => s + l.quantity, 0),
   };
-  return quote;
 }

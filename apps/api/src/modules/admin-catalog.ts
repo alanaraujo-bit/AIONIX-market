@@ -1,18 +1,19 @@
 import {
   bannerInputSchema,
   categoryInputSchema,
+  formatBRL,
   productInputSchema,
   promotionInputSchema,
   settingsSchema,
   slugify,
 } from "@aionix/shared";
-import { and, asc, desc, eq, inArray, lte, ne, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, lte, ne, or, sql, type SQL } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { db, schema } from "../db/client";
 import { requireAdmin } from "../lib/auth";
 import { ACCENT_FROM, ACCENT_TO, badRequest, conflict, foldAccents, notFound, pageParams, parse, str } from "../lib/http";
-import { getActivePromotions, invalidatePricing, serializeProduct } from "../lib/pricing";
+import { getActivePromotions, invalidatePricing, MAX_DISCOUNT_RATIO, serializeProduct } from "../lib/pricing";
 import { getSettings, saveSettings } from "../lib/settings";
 
 const p = schema.products;
@@ -297,6 +298,23 @@ export const adminCatalogRoutes: FastifyPluginAsync = async (app) => {
       throw badRequest("Selecione ao menos um produto ou categoria para a campanha");
     }
     const { productIds, categoryIds, ...values } = input;
+    if (input.discountType === "fixed") {
+      // A fixed discount must leave every affected product above the 90% cap.
+      const scope: SQL[] = [];
+      if (productIds.length) scope.push(inArray(p.id, productIds));
+      if (categoryIds.length) scope.push(inArray(p.categoryId, categoryIds));
+      const [cheapest] = await db
+        .select({ name: p.name, priceCents: p.priceCents })
+        .from(p)
+        .where(and(eq(p.active, true), or(...scope)))
+        .orderBy(asc(p.priceCents))
+        .limit(1);
+      if (cheapest && input.discountValue > Math.floor(cheapest.priceCents * MAX_DISCOUNT_RATIO)) {
+        throw badRequest(
+          `Desconto de ${formatBRL(input.discountValue)} excede 90% do preço de "${cheapest.name}" (${formatBRL(cheapest.priceCents)}). Reduza o valor ou ajuste a abrangência.`,
+        );
+      }
+    }
     const row = await db.transaction(async (tx) => {
       const [saved] = id
         ? await tx.update(pr).set(values).where(eq(pr.id, id)).returning()
