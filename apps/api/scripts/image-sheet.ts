@@ -12,10 +12,11 @@ for (const g of groups) {
   for (const e of (seed as any)[g] as { i: number; name: string; img: string }[]) {
     const res = await fetch(e.img, { headers: { "User-Agent": "AIONIX-market-seed/1.0 (contact: dev@aionix.market)" } });
     const buf = Buffer.from(await res.arrayBuffer());
-    const before = await sharp(buf).resize(200, 200, { fit: "contain", background: "#f6f4ee" }).png().toBuffer();
+    // White tiles mimic the product card (the plate defect is invisible on an off-white canvas).
+    const before = await sharp(buf).flatten({ background: "#fff" }).resize(200, 200, { fit: "contain", background: "#fff" }).png().toBuffer();
     const r = await processImage(buf, { maxSize: 1000, trim: true });
-    const after = await sharp(r.data).resize(200, 200, { fit: "contain", background: "#f6f4ee" }).png().toBuffer();
-    tiles.push(await sharp({ create: { width: 400, height: 200, channels: 3, background: "#f6f4ee" } }).composite([{ input: before, left: 0, top: 0 }, { input: after, left: 200, top: 0 }]).png().toBuffer());
+    const after = await sharp(r.data).resize(200, 200, { fit: "contain", background: "#fff" }).png().toBuffer();
+    tiles.push(await sharp({ create: { width: 400, height: 200, channels: 3, background: "#fff" } }).composite([{ input: before, left: 0, top: 0 }, { input: after, left: 200, top: 0 }]).png().toBuffer());
     console.log(g, e.i, e.name, r.background);
     await new Promise((r) => setTimeout(r, 400));
   }

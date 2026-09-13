@@ -54,6 +54,26 @@ async function sampleBackground(input: Buffer): Promise<[number, number, number]
   return mean.map(Math.round) as [number, number, number];
 }
 
+/** In-place: lifts near-neutral pixels with luma in [190, 240] smoothly towards white. */
+function fadeNeutralShadows(data: Buffer, channels: number) {
+  const LO = 190;
+  const HI = 240;
+  for (let i = 0; i < data.length; i += channels) {
+    const r = data[i]!;
+    const g = data[i + 1]!;
+    const b = data[i + 2]!;
+    const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+    if (chroma > 22) continue;
+    const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    if (luma < LO) continue;
+    const t = Math.min(1, (luma - LO) / (HI - LO));
+    const k = t * t * (3 - 2 * t); // smoothstep
+    data[i] = Math.round(r + (255 - r) * k);
+    data[i + 1] = Math.round(g + (255 - g) * k);
+    data[i + 2] = Math.round(b + (255 - b) * k);
+  }
+}
+
 /**
  * Normalizes any uploaded image into an optimized WebP (max 1200px, EXIF-rotated)
  * plus a tiny blur placeholder, stores it and records it in the media library.
@@ -87,6 +107,7 @@ export async function processImage(input: Buffer, opts: ProcessOptions = {}) {
     throw badRequest("Arquivo de imagem inválido");
   }
   let gain: number[] | null = null;
+  let greySweep = false;
   if (opts.trim) {
     // Product shots on a light studio sweep (grey/off-white) render as a visible
     // plate inside cards. Detect a uniform light background from the corners,
@@ -95,17 +116,27 @@ export async function processImage(input: Buffer, opts: ProcessOptions = {}) {
     if (bg) {
       pipeline = pipeline.trim({ background: bg, threshold: 28 });
       gain = bg.map((c) => Math.min(1.3, 255 / Math.max(1, c)));
+      // Only real grey sweeps carry a shadow plate; near-white ones (garlic,
+      // strawberries) contain light neutral product pixels we must not lift.
+      greySweep = 0.2126 * bg[0] + 0.7152 * bg[1] + 0.0722 * bg[2] <= 252;
     } else {
       pipeline = pipeline.trim({ threshold: 12 });
     }
   }
   const max = opts.maxSize ?? 1200;
   if (gain) pipeline = pipeline.linear(gain, [0, 0, 0]);
-  const { data, info } = await pipeline
+  pipeline = pipeline
     .resize({ width: max, height: max, fit: "inside", withoutEnlargement: true })
-    .flatten({ background: "#ffffff" })
-    .webp({ quality: 82, effort: 5 })
-    .toBuffer({ resolveWithObject: true });
+    .flatten({ background: "#ffffff" });
+  if (gain && greySweep) {
+    // The sweep's soft interior shadow (~225–245, neutral) survives the corner
+    // gain and shows as a plate under the product. Fade neutral light pixels to
+    // white; saturated product pixels are untouched.
+    const raw = await pipeline.removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    fadeNeutralShadows(raw.data, raw.info.channels);
+    pipeline = sharp(raw.data, { raw: { width: raw.info.width, height: raw.info.height, channels: raw.info.channels } });
+  }
+  const { data, info } = await pipeline.webp({ quality: 82, effort: 5 }).toBuffer({ resolveWithObject: true });
 
   const blur = await sharp(data).resize(16, 16, { fit: "inside" }).webp({ quality: 45 }).toBuffer();
   const blurDataUrl = `data:image/webp;base64,${blur.toString("base64")}`;
