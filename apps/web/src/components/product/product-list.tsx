@@ -32,7 +32,7 @@ export function SortChips({ value, onChange }: { value: string; onChange: (v: st
   );
 }
 
-export function InfiniteProductGrid({ query, emptyTitle = "Nada por aqui" }: { query: ProductQuery; emptyTitle?: string }) {
+export function InfiniteProductGrid({ query, emptyTitle = "Nada por aqui", showCount = true }: { query: ProductQuery; emptyTitle?: string; showCount?: boolean }) {
   const q = useInfiniteProducts(query);
   const items = q.data?.pages.flatMap((p) => p.items);
   const total = q.data?.pages[0]?.total ?? 0;
@@ -52,9 +52,11 @@ export function InfiniteProductGrid({ query, emptyTitle = "Nada por aqui" }: { q
   }
   return (
     <>
-      <p className="px-5 pb-3 text-[12.5px] font-semibold text-muted">
-        {total} {total === 1 ? "produto" : "produtos"}
-      </p>
+      {showCount && (
+        <p className="px-5 pb-3 text-[12.5px] font-semibold text-muted">
+          {total} {total === 1 ? "produto" : "produtos"}
+        </p>
+      )}
       <ProductGrid products={items} />
       {q.hasNextPage && (
         <div ref={sentinel} className="mt-3 grid grid-cols-2 gap-3 px-4">

@@ -1,19 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CartBar } from "@/components/cart-bar";
 import { InfiniteProductGrid, SortChips } from "@/components/product/product-list";
 import { Screen, TopBar } from "@/components/ui/screen";
+import { useInfiniteProducts } from "@/lib/products";
 import type { Category } from "@/lib/types";
 
 export function CategoryScreen({ slug, category }: { slug: string; category: Category | null }) {
   const [sort, setSort] = useState("");
+  const query = useMemo(() => ({ category: slug, sort }), [slug, sort]);
+  // Shares the grid's cache; the ISR'd category count can lag behind admin edits.
+  const live = useInfiniteProducts(query).data?.pages[0]?.total;
+  const count = live ?? category?.productCount;
   return (
     <>
       <Screen
         header={
           <>
-            <TopBar back backFallback="/buscar" title={category?.name ?? "Categoria"} subtitle={category ? `${category.productCount} produtos` : undefined} />
+            <TopBar
+              back
+              backFallback="/buscar"
+              title={category?.name ?? "Categoria"}
+              subtitle={count !== undefined ? `${count} ${count === 1 ? "produto" : "produtos"}` : undefined}
+            />
             <div className="shrink-0 bg-canvas pb-3">
               <SortChips value={sort} onChange={setSort} />
             </div>
@@ -30,7 +40,7 @@ export function CategoryScreen({ slug, category }: { slug: string; category: Cat
           </div>
         )}
         <div className="pb-24">
-          <InfiniteProductGrid query={{ category: slug, sort }} emptyTitle="Categoria vazia" />
+          <InfiniteProductGrid query={query} emptyTitle="Categoria vazia" showCount={false} />
         </div>
       </Screen>
       <CartBar className="bottom-[calc(env(safe-area-inset-bottom)+12px)]" />
