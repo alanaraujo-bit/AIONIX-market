@@ -1,6 +1,6 @@
 "use client";
 
-import { formatBRL, formatOrderNumber, nextOrderStatus, ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, type OrderStatus } from "@aionix/shared";
+import { formatBRL, formatOrderNumber, nextOrderStatus, ORDER_STATUS_LABEL, orderStatusLabel, PAYMENT_METHOD_LABEL, type OrderStatus } from "@aionix/shared";
 import { ArrowRight, ChevronLeft, ChevronRight, Receipt, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -117,12 +117,12 @@ export function OrdersScreen() {
                         <span className="block truncate text-[12px] text-muted">{o.deliverySlot}</span>
                       </td>
                       <td className="px-3 py-3 text-ink-2">{o.fulfillmentMethod === "pickup" && o.paymentMethod === "card_on_delivery" ? "Cartão na retirada" : PAYMENT_METHOD_LABEL[o.paymentMethod]}</td>
-                      <td className="px-3 py-3"><StatusPill status={o.status} /></td>
+                      <td className="px-3 py-3"><StatusPill status={o.status} fulfillmentMethod={o.fulfillmentMethod} /></td>
                       <td className="tabular px-3 py-3 text-right font-bold">{formatBRL(o.totalCents)}</td>
                       <td className="px-5 py-3 text-right">
                         {next ? (
                           <Button size="sm" variant={o.status === "pending" ? "primary" : "outline"} loading={advance.isPending && advance.variables?.id === o.id} onClick={() => advance.mutate({ id: o.id, status: next })}>
-                            {o.fulfillmentMethod === "pickup" && next === "delivered" ? "Confirmar retirada" : ORDER_STATUS_LABEL[next].replace("Pedido ", "")} <ArrowRight className="size-3.5" />
+                            {o.fulfillmentMethod === "pickup" && next === "delivered" ? "Confirmar retirada" : orderStatusLabel(next, o.fulfillmentMethod).replace("Pedido ", "")} <ArrowRight className="size-3.5" />
                           </Button>
                         ) : (
                           <Link href={`/pedidos/${o.id}`} className="text-[12.5px] font-semibold text-brand-2">Detalhes</Link>

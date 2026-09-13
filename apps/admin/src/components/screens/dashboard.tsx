@@ -137,7 +137,7 @@ export function DashboardScreen() {
                 {PIPELINE.map((p) => (
                   <li key={p.s} className="flex items-center gap-2.5 text-[13.5px]">
                     <span className={cn("size-2.5 rounded-full", p.tone)} />
-                    <span className="flex-1 font-medium text-ink-2">{ORDER_STATUS_SHORT[p.s]}</span>
+                    <span className="flex-1 font-medium text-ink-2">{p.s === "out_for_delivery" ? "Em rota · pronto p/ retirar" : ORDER_STATUS_SHORT[p.s]}</span>
                     <span className="tabular font-bold">{data?.pipeline[p.s] ?? 0}</span>
                   </li>
                 ))}
@@ -160,7 +160,7 @@ export function DashboardScreen() {
                     <span className="tabular w-16 text-[13.5px] font-bold">{formatOrderNumber(o.number)}</span>
                     <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">{o.customerName}</span>
                     <span className="hidden text-[12.5px] text-muted sm:block">{new Date(o.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
-                    <StatusPill status={o.status} />
+                    <StatusPill status={o.status} fulfillmentMethod={o.fulfillmentMethod} />
                     <span className="tabular w-24 text-right text-[13.5px] font-bold">{formatBRL(o.totalCents)}</span>
                   </Link>
                 </li>

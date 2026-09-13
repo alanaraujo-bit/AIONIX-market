@@ -1,6 +1,7 @@
 "use client";
 
-import { formatOrderNumber, ORDER_STATUS_LABEL, type OrderStatus } from "@aionix/shared";
+import { formatOrderNumber, orderStatusLabel, type OrderStatus } from "@aionix/shared";
+import { sfx } from "./sound";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { api } from "./api";
@@ -12,6 +13,7 @@ interface OrderEvent {
   orderId: string;
   number: number;
   status: OrderStatus;
+  fulfillmentMethod?: "delivery" | "pickup";
 }
 
 /**
@@ -44,10 +46,11 @@ export function RealtimeBridge() {
           void qc.invalidateQueries({ queryKey: ["orders"] });
           void qc.invalidateQueries({ queryKey: ["order", e.orderId] });
           haptic([10, 40, 10]);
+          if (e.fulfillmentMethod === "pickup" && e.status === "out_for_delivery") sfx.success();
           const onOrderPage = window.location.pathname === `/pedidos/${e.orderId}`;
           if (!onOrderPage) {
             toast(`Pedido ${formatOrderNumber(e.number)}`, {
-              description: ORDER_STATUS_LABEL[e.status],
+              description: e.fulfillmentMethod === "pickup" && e.status === "out_for_delivery" ? "Seu pedido está pronto para retirada!" : orderStatusLabel(e.status, e.fulfillmentMethod),
               action: { label: "Ver", href: `/pedidos/${e.orderId}` },
             });
           }

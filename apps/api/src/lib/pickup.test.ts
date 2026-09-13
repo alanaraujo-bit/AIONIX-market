@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { canTransition, checkoutSchema, nextOrderStatus, settingsSchema } from "@aionix/shared";
+import { canTransition, checkoutSchema, nextOrderStatus, orderStatusLabel, orderStatusShort, settingsSchema } from "@aionix/shared";
 vi.mock("../db/client", () => ({ db: {}, schema: {} }));
 vi.mock("./settings", () => ({ getSettings: vi.fn() }));
 const { buildQuote } = await import("./pricing");
@@ -21,14 +21,21 @@ describe("store pickup", () => {
     expect(checkoutSchema.safeParse(checkout).success).toBe(false);
     expect(checkoutSchema.safeParse({ ...checkout, fulfillmentMethod: "drone" }).success).toBe(false);
   });
-  it("only completes pickup from picking and rejects courier statuses", () => {
-    expect(nextOrderStatus("picking", "pickup")).toBe("delivered");
-    expect(canTransition("picking", "delivered", "pickup")).toBe(true);
+  it("pickup has a 'ready for pickup' step before the customer collects it", () => {
+    expect(nextOrderStatus("picking", "pickup")).toBe("out_for_delivery");
+    expect(nextOrderStatus("out_for_delivery", "pickup")).toBe("delivered");
+    expect(canTransition("picking", "delivered", "pickup")).toBe(false);
     expect(canTransition("confirmed", "delivered", "pickup")).toBe(false);
-    expect(canTransition("picking", "out_for_delivery", "pickup")).toBe(false);
-    expect(canTransition("picking", "delivered", "delivery")).toBe(false);
+    expect(canTransition("out_for_delivery", "delivered", "pickup")).toBe(true);
     expect(canTransition("delivered", "cancelled", "pickup")).toBe(false);
-    expect(canTransition("picking", "cancelled", "pickup")).toBe(true);
+    expect(canTransition("out_for_delivery", "cancelled", "pickup")).toBe(true);
+  });
+  it("labels pickup steps in pickup language and leaves delivery untouched", () => {
+    expect(orderStatusLabel("out_for_delivery", "pickup")).toBe("Pronto para retirada");
+    expect(orderStatusLabel("delivered", "pickup")).toBe("Retirado na loja");
+    expect(orderStatusLabel("out_for_delivery", "delivery")).toBe("Saiu para entrega");
+    expect(orderStatusShort("out_for_delivery", "pickup")).toBe("Pronto");
+    expect(orderStatusLabel("picking", "pickup")).toBe("Em separação");
   });
   it("requires a real configured location before enabling pickup", () => {
     const base = { ...settings, storeName: "Mercado", storeOpen: true, etaMinutes: 45 };

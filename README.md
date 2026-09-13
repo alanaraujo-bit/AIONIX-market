@@ -44,6 +44,9 @@ pnpm turbo typecheck            # 4 pacotes
 pnpm turbo test                 # vitest — regras de preço (apps/api/src/lib/pricing.test.ts)
 node scripts/flow.mjs http://localhost:3000 out/            # E2E consumidor: login → carrinho → checkout → pedido
 ADMIN_PASSWORD=… node scripts/realtime-e2e.mjs http://localhost:3000 http://localhost:3001 out/   # pedido → admin avança → cliente vê via SSE
+node scripts/pickup-e2e.mjs http://localhost:3000 out/pickup   # retirada: checkout sem frete → pronto p/ retirada → retirado → medalha + moedas (staging; religa e restaura a config)
+node scripts/achievements-visual.mjs                         # conquistas: coleção, filtros, detalhe, admin (mobile + desktop)
+cd apps/api && pnpm exec tsx --env-file=.env scripts/achievement-integration.ts   # conquistas: 15 checagens de regra, concorrência e snapshot
 node scripts/coins-e2e.mjs http://localhost:3000 out/coins   # moedas: resgate → voucher no carrinho → checkout → entrega → celebração (staging)
 node scripts/pwa-check.mjs https://aionix-market.vercel.app  # manifest, ícones, service worker, offline
 node scripts/shot.mjs <url> out.png [--desktop] [--login] [--scroll N]   # screenshot para QA visual

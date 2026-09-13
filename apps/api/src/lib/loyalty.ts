@@ -152,7 +152,7 @@ export async function getWallet(userId: string): Promise<Wallet> {
       .from(ce)
       .where(eq(ce.userId, userId)),
     db
-      .select({ entry: ce, number: o.number })
+      .select({ entry: ce, number: o.number, method: o.fulfillmentMethod })
       .from(ce)
       .leftJoin(o, eq(o.id, ce.orderId))
       .where(and(eq(ce.userId, userId), eq(ce.status, "settled"), isNull(ce.seenAt), sql`${ce.coins} > 0`))
@@ -181,7 +181,7 @@ export async function getWallet(userId: string): Promise<Wallet> {
     balance: t.balance,
     pending: t.pending,
     earnedTotal: t.earnedTotal,
-    unseen: unseen.map(({ entry, number }) => ({ id: entry.id, coins: entry.coins, type: entry.type, orderNumber: number ?? null, note: entry.note })),
+    unseen: unseen.map(({ entry, number, method }) => ({ id: entry.id, coins: entry.coins, type: entry.type, orderNumber: number ?? null, fulfillmentMethod: method ?? null, note: entry.note })),
     vouchers: vouchers.map(({ row, number, productName }) => serializeRedemption(row, { orderNumber: number, productName })),
     history: history.map(({ entry, number, rewardName }) => serializeCoinEntry(entry, { orderNumber: number, rewardName })),
     nextReward: next ? { id: next.id, name: next.name, costCoins: next.costCoins, missing: next.costCoins - t.balance } : null,

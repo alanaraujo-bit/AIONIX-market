@@ -18,12 +18,12 @@ export function ensureAchievementDefaults() {
 async function factsFor(tx: Tx, userId: string, rule?: AchievementInput["rule"]): Promise<AchievementFacts> {
   const o = schema.orders;
   const qualifyingOrder = and(eq(o.userId, userId), eq(o.status, "delivered"),
-    rule?.minOrderCents !== undefined ? sql`${o.totalCents} >= ${rule.minOrderCents}` : undefined,
+    rule?.minOrderCents !== undefined ? sql`${o.totalCents} - ${o.deliveryFeeCents} >= ${rule.minOrderCents}` : undefined,
     rule?.paymentMethod ? eq(o.paymentMethod, rule.paymentMethod) : undefined,
     rule?.productId || rule?.categoryId ? sql`exists (select 1 from ${schema.orderItems} ai left join ${schema.products} ap on ap.id = ai.product_id where ai.order_id = ${o.id} ${rule.productId ? sql`and ai.product_id = ${rule.productId}` : sql``} ${rule.categoryId ? sql`and ap.category_id = ${rule.categoryId}` : sql``})` : undefined,
   );
   const [purchases] = await tx.select({
-    count: sql<number>`count(*)::int`, single: sql<number>`coalesce(max(${o.totalCents}), 0)::int`, total: sql<number>`coalesce(sum(${o.totalCents}), 0)::float8`,
+    count: sql<number>`count(*)::int`, single: sql<number>`coalesce(max(${o.totalCents} - ${o.deliveryFeeCents}), 0)::int`, total: sql<number>`coalesce(sum(${o.totalCents} - ${o.deliveryFeeCents}), 0)::float8`,
     days: sql<number>`count(distinct (${o.createdAt} at time zone 'America/Sao_Paulo')::date)::int`,
     months: sql<number>`count(distinct to_char(${o.createdAt} at time zone 'America/Sao_Paulo', 'YYYY-MM'))::int`,
     pickup: sql<number>`count(*) filter (where ${o.fulfillmentMethod} = 'pickup')::int`,
@@ -60,7 +60,7 @@ export async function getMyAchievements(userId: string): Promise<MyAchievements>
       if (!row.active || owned.has(row.id) || !achievementProgress(definition.rule, await factsForRule(definition.rule)).complete) continue;
       const [award] = await tx.insert(achievementAwards).values({ userId, achievementId: row.id, snapshot: definition }).onConflictDoNothing().returning();
       if (!award) continue;
-      if (definition.bonusCoins > 0) await tx.insert(schema.coinEntries).values({ userId, type: "bonus", status: "settled", coins: definition.bonusCoins, note: `Conquista: ${definition.title}`, settledAt: new Date() });
+      if (definition.bonusCoins > 0) await tx.insert(schema.coinEntries).values({ userId, type: "bonus", status: "settled", coins: definition.bonusCoins, note: `Conquista: ${definition.title}`, settledAt: new Date(), seenAt: new Date() });
       owned.set(row.id, award);
     }
     const awards = [...owned.values()];

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatBRL, formatOrderNumber, nextOrderStatus, orderFlow, ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, type OrderStatus } from "@aionix/shared";
+import { formatBRL, formatOrderNumber, nextOrderStatus, orderFlow, ORDER_STATUS_LABEL, orderStatusLabel, PAYMENT_METHOD_LABEL, type OrderStatus } from "@aionix/shared";
 import { ArrowRight, Clock3, MapPin, Phone, Printer, User, Wallet, XCircle } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
@@ -39,7 +39,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="font-display text-[26px] font-bold tracking-[-0.03em]">Pedido {formatOrderNumber(order.number)}</h1>
-            <StatusPill status={order.status} />
+            <StatusPill status={order.status} fulfillmentMethod={order.fulfillmentMethod} />
           </div>
           <p className="mt-1 text-[13.5px] text-muted">
             Recebido em {new Date(order.createdAt).toLocaleString("pt-BR", { day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" })} · {order.deliverySlot}
@@ -50,7 +50,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
           {!final && <Button variant="danger" onClick={() => setCancelOpen(true)}><XCircle className="size-4" /> Cancelar</Button>}
           {next && (
             <Button loading={update.isPending} onClick={() => update.mutate({ status: next, note: note || undefined })}>
-              {pickup && next === "delivered" ? "Confirmar retirada pelo cliente" : ORDER_STATUS_LABEL[next]} <ArrowRight className="size-4" />
+              {pickup && next === "delivered" ? "Confirmar retirada pelo cliente" : pickup && next === "out_for_delivery" ? "Avisar: pronto para retirada" : ORDER_STATUS_LABEL[next]} <ArrowRight className="size-4" />
             </Button>
           )}
         </div>
@@ -71,7 +71,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
                     <div className={cn("flex items-center gap-2 rounded-xl px-3 py-2", active ? (s === "cancelled" ? "bg-sale text-white" : "bg-brand text-white") : done ? "bg-brand-soft text-brand" : "bg-line-2 text-faint")}>
                       <Icon className="size-4" strokeWidth={2.4} />
                       <span>
-                        <span className="block text-[12.5px] font-bold">{pickup && s === "delivered" ? "Retirado na loja" : ORDER_STATUS_LABEL[s]}</span>
+                        <span className="block text-[12.5px] font-bold">{orderStatusLabel(s, order.fulfillmentMethod)}</span>
                         {ev && <span className={cn("block text-[11px]", active ? "text-white/70" : "text-muted")}>{new Date(ev.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}{ev.note ? ` · ${ev.note}` : ""}</span>}
                       </span>
                     </div>
@@ -85,7 +85,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
                 <Input label="Observação para o cliente (opcional)" value={note} onChange={(e) => setNote(e.target.value.slice(0, 200))} placeholder="Ex.: Substituímos o leite por outra marca" className="min-w-[260px] flex-1" />
                 {next && (
                   <p className="pb-2.5 text-[12.5px] text-muted">
-                    A observação é enviada junto com <strong className="font-semibold text-ink">{pickup && next === "delivered" ? "Retirada concluída" : ORDER_STATUS_LABEL[next]}</strong>.
+                    A observação é enviada junto com <strong className="font-semibold text-ink">{pickup && next === "delivered" ? "Retirada concluída" : orderStatusLabel(next, order.fulfillmentMethod)}</strong>.
                   </p>
                 )}
               </div>

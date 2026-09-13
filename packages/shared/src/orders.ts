@@ -29,8 +29,27 @@ export const ORDER_STATUS_SHORT: Record<OrderStatus, string> = {
 /** Linear fulfillment flow; cancellation is allowed from any non-final state. */
 export const ORDER_FLOW: OrderStatus[] = ["pending", "confirmed", "picking", "out_for_delivery", "delivered"];
 
-export function orderFlow(fulfillmentMethod: "delivery" | "pickup" = "delivery"): OrderStatus[] {
-  return fulfillmentMethod === "pickup" ? ORDER_FLOW.filter((status) => status !== "out_for_delivery") : ORDER_FLOW;
+export type FulfillmentMethod = "delivery" | "pickup";
+
+/**
+ * Both methods share the same steps. For pickup, `out_for_delivery` means
+ * "separado, pronto para retirada" — the moment the customer can come — and
+ * `delivered` means "retirado na loja".
+ */
+export function orderFlow(_fulfillmentMethod: FulfillmentMethod = "delivery"): OrderStatus[] {
+  return ORDER_FLOW;
+}
+
+const PICKUP_LABEL: Partial<Record<OrderStatus, string>> = { out_for_delivery: "Pronto para retirada", delivered: "Retirado na loja" };
+const PICKUP_SHORT: Partial<Record<OrderStatus, string>> = { out_for_delivery: "Pronto", delivered: "Retirado" };
+
+/** Status label that speaks the right language for delivery vs. pickup. */
+export function orderStatusLabel(status: OrderStatus, fulfillmentMethod: FulfillmentMethod = "delivery"): string {
+  return (fulfillmentMethod === "pickup" && PICKUP_LABEL[status]) || ORDER_STATUS_LABEL[status];
+}
+
+export function orderStatusShort(status: OrderStatus, fulfillmentMethod: FulfillmentMethod = "delivery"): string {
+  return (fulfillmentMethod === "pickup" && PICKUP_SHORT[status]) || ORDER_STATUS_SHORT[status];
 }
 
 export function nextOrderStatus(status: OrderStatus, fulfillmentMethod: "delivery" | "pickup" = "delivery"): OrderStatus | null {

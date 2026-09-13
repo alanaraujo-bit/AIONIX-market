@@ -25,7 +25,7 @@ export function AchievementRewards({ achievement }: { achievement: Achievement }
 }
 
 export function AchievementDetail({ achievement: a, onClose }: { achievement: AchievementProgress; onClose: () => void }) {
-  const destination = a.rule.metric === "profile_complete" ? "/conta" : a.rule.metric === "redemptions_count" ? "/premios" : "/";
+  const destination = a.rule.metric === "profile_complete" ? "/conta" : a.rule.metric === "redemptions_count" ? "/moedas" : "/";
   const action = a.rule.metric === "profile_complete" ? "Completar meu perfil" : a.rule.metric === "redemptions_count" ? "Conhecer os prêmios" : "Explorar o mercado";
   return <div className={styles.detail}>
     <Medal icon={a.icon} color={a.color} unlocked={a.unlocked} large />

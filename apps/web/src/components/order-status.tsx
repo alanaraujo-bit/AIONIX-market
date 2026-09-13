@@ -1,7 +1,7 @@
 "use client";
 
-import { orderFlow, ORDER_STATUS_LABEL, ORDER_STATUS_SHORT, type OrderEvent, type OrderStatus } from "@aionix/shared";
-import { Check, ClipboardCheck, PackageSearch, PartyPopper, Truck, XCircle, type LucideIcon } from "lucide-react";
+import { orderFlow, orderStatusLabel, orderStatusShort, type FulfillmentMethod, type OrderEvent, type OrderStatus } from "@aionix/shared";
+import { Check, ClipboardCheck, PackageSearch, PartyPopper, Store, Truck, XCircle, type LucideIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "./ui/primitives";
 
@@ -14,8 +14,10 @@ const ICONS: Record<OrderStatus, LucideIcon> = {
   cancelled: XCircle,
 };
 
-export function StatusPill({ status, size = "sm" }: { status: OrderStatus; size?: "sm" | "md" }) {
-  const Icon = ICONS[status];
+const iconFor = (s: OrderStatus, method: FulfillmentMethod) => (method === "pickup" && s === "out_for_delivery" ? Store : ICONS[s]);
+
+export function StatusPill({ status, size = "sm", fulfillmentMethod = "delivery" }: { status: OrderStatus; size?: "sm" | "md"; fulfillmentMethod?: FulfillmentMethod }) {
+  const Icon = iconFor(status, fulfillmentMethod);
   const tone =
     status === "delivered"
       ? "bg-brand-soft text-brand"
@@ -28,7 +30,7 @@ export function StatusPill({ status, size = "sm" }: { status: OrderStatus; size?
     <span className={cn("inline-flex items-center gap-1.5 rounded-full font-bold", tone, size === "sm" ? "px-2.5 py-1 text-[11.5px]" : "px-3 py-1.5 text-[13px]")}>
       {status !== "cancelled" && status !== "delivered" && <span className="size-1.5 animate-pulse rounded-full bg-current" />}
       <Icon className={size === "sm" ? "size-3.5" : "size-4"} strokeWidth={2.4} />
-      {ORDER_STATUS_SHORT[status]}
+      {orderStatusShort(status, fulfillmentMethod)}
     </span>
   );
 }
@@ -47,7 +49,7 @@ export function OrderTimeline({ status, events = [], fulfillmentMethod = "delive
   return (
     <ol className="relative">
       {steps.map((s, i) => {
-        const Icon = ICONS[s];
+        const Icon = iconFor(s, fulfillmentMethod);
         const done = cancelled ? s !== "cancelled" : i <= currentIndex;
         const active = cancelled ? s === "cancelled" : i === currentIndex;
         const ev = eventFor(s);
@@ -74,7 +76,7 @@ export function OrderTimeline({ status, events = [], fulfillmentMethod = "delive
               <Icon className="size-4" strokeWidth={2.5} />
             </motion.span>
             <div className="min-w-0 pt-1.5">
-              <p className={cn("text-[14.5px] font-bold tracking-[-0.01em]", done ? "text-ink" : "text-faint")}>{fulfillmentMethod === "pickup" && s === "delivered" ? "Retirado na loja" : ORDER_STATUS_LABEL[s]}</p>
+              <p className={cn("text-[14.5px] font-bold tracking-[-0.01em]", done ? "text-ink" : "text-faint")}>{orderStatusLabel(s, fulfillmentMethod)}</p>
               {ev ? (
                 <p className="mt-0.5 text-[12.5px] font-medium text-muted">
                   {fmtTime(ev.createdAt)}

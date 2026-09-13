@@ -300,7 +300,7 @@ export function CheckoutScreen() {
               {!!quote?.clubDiscountCents && <div className="flex justify-between font-semibold text-club"><span className="flex items-center gap-1.5"><Crown className="size-3.5 text-club-gold" strokeWidth={2.8} fill="currentColor" /> Preço de Clube</span><span className="tabular">− {formatBRL(quote.clubDiscountCents)}</span></div>}
               <div className="flex justify-between text-muted"><span>{pickup ? "Retirada na loja" : "Entrega"}</span><span className={cn("tabular", quote?.deliveryFeeCents === 0 && "font-semibold text-brand-2")}>{quote ? (quote.deliveryFeeCents ? formatBRL(quote.deliveryFeeCents) : "Grátis") : "—"}</span></div>
               <div className="flex items-baseline justify-between pt-1"><span className="text-[15px] font-bold">Total</span><span className="tabular font-display text-[22px] font-bold tracking-[-0.02em]">{quote ? formatBRL(quote.totalCents) : "—"}</span></div>
-              <CoinsEarnChip quote={quote} className="pt-1" />
+              <CoinsEarnChip quote={quote} className="pt-1" pickup={pickup} />
             </div>
           </div>
         </Section>
@@ -359,7 +359,7 @@ function SuccessCoins({ order }: { order: Order }) {
           +{coinLabel(order.coinsEarned, p)} {settledNow ? "na sua carteira" : "a caminho"}
         </span>
         <span className="block text-[12.5px] text-white/70">
-          {settledNow ? "Já dá para trocar por prêmios." : p.awardOn === "confirmed" ? "Liberadas quando a loja confirmar." : "Liberadas assim que o pedido chegar."}
+          {settledNow ? "Já dá para trocar por prêmios." : p.awardOn === "confirmed" ? "Liberadas quando a loja confirmar." : order.fulfillmentMethod === "pickup" ? "Liberadas quando você retirar o pedido." : "Liberadas assim que o pedido chegar."}
         </span>
       </span>
     </motion.div>

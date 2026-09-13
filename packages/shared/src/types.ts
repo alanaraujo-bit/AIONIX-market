@@ -265,7 +265,7 @@ export interface Wallet {
   /** Lifetime coins credited (for the "you've earned X so far" line). */
   earnedTotal: number;
   /** Credits the shopper hasn't been shown yet (drives the celebration). */
-  unseen: { id: string; coins: number; type: CoinEntryType; orderNumber: number | null; note: string | null }[];
+  unseen: { id: string; coins: number; type: CoinEntryType; orderNumber: number | null; fulfillmentMethod: "delivery" | "pickup" | null; note: string | null }[];
   vouchers: Redemption[];
   history: CoinEntry[];
   /** Cheapest active reward the shopper can't afford yet, for the progress bar. */

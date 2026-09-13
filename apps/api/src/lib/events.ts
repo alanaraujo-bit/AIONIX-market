@@ -7,6 +7,7 @@ export interface OrderEventPayload {
   userId: string;
   number: number;
   status: OrderStatus;
+  fulfillmentMethod: "delivery" | "pickup";
   totalCents: number;
   at: string;
 }

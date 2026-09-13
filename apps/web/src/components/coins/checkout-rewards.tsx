@@ -30,7 +30,7 @@ function useVoucherHygiene() {
   }, [redemptionId, wallet.data, select]);
 }
 
-export function CoinsEarnChip({ quote, className }: { quote: Quote | undefined; className?: string }) {
+export function CoinsEarnChip({ quote, className, pickup = false }: { quote: Quote | undefined; className?: string; pickup?: boolean }) {
   const program = useLoyaltyProgram();
   const { user } = useSession();
   const p = program.data;
@@ -53,7 +53,7 @@ export function CoinsEarnChip({ quote, className }: { quote: Quote | undefined; 
               <motion.span key={coins} initial={{ scale: 1.25 }} animate={{ scale: 1 }} className="inline-block font-extrabold tabular text-coin-2">
                 {coinLabel(coins, p)}
               </motion.span>
-              {p.awardOn === "delivered" ? " na entrega" : p.awardOn === "confirmed" ? " na confirmação" : ""}
+              {p.awardOn === "delivered" ? (pickup ? " na retirada" : " na entrega") : p.awardOn === "confirmed" ? " na confirmação" : ""}
             </span>
           </div>
         </motion.div>

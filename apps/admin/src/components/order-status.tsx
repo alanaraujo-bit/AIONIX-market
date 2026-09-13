@@ -1,6 +1,6 @@
 "use client";
 
-import { ORDER_STATUS_SHORT, type OrderStatus } from "@aionix/shared";
+import { orderStatusShort, type OrderStatus } from "@aionix/shared";
 import { Check, ClipboardCheck, PackageSearch, PartyPopper, Truck, XCircle, type LucideIcon } from "lucide-react";
 import { cn } from "./ui";
 
@@ -22,12 +22,12 @@ export const STATUS_TONE: Record<OrderStatus, string> = {
   cancelled: "bg-sale-soft text-sale",
 };
 
-export function StatusPill({ status, className }: { status: OrderStatus; className?: string }) {
+export function StatusPill({ status, className , fulfillmentMethod = "delivery" }: { status: OrderStatus; className?: string ; fulfillmentMethod?: "delivery" | "pickup" }) {
   const Icon = STATUS_ICON[status];
   return (
     <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-bold whitespace-nowrap", STATUS_TONE[status], className)}>
       <Icon className="size-3.5" strokeWidth={2.5} />
-      {ORDER_STATUS_SHORT[status]}
+      {orderStatusShort(status, fulfillmentMethod)}
     </span>
   );
 }

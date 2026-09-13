@@ -39,10 +39,10 @@ export function CoinBridge() {
         : first.type === "adjust" && unseen.length === 1
           ? "A loja te presenteou!"
           : orders.length === 1
-            ? `Pedido ${formatOrderNumber(orders[0]!.orderNumber!)} entregue!`
+            ? `Pedido ${formatOrderNumber(orders[0]!.orderNumber!)} ${orders[0]!.fulfillmentMethod === "pickup" ? "retirado" : "entregue"}!`
             : "Você ganhou!";
     const subtitle =
-      first.type === "adjust" && first.note ? first.note : orders.length > 1 ? `${orders.length} pedidos entregues.` : orders.length === 1 ? "Obrigado por comprar pelo app." : undefined;
+      first.type === "adjust" && first.note ? first.note : orders.length > 1 ? `${orders.length} pedidos concluídos.` : orders.length === 1 ? "Obrigado por comprar pelo app." : undefined;
     useCoinCelebration.getState().show({ coins, title, subtitle, entryIds: unseen.map((u) => u.id), balance: wallet.data?.balance ?? null });
   }, [wallet.data]);
 

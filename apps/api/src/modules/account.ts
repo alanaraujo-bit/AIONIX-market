@@ -351,6 +351,7 @@ export const accountRoutes: FastifyPluginAsync = async (app) => {
       userId,
       number: order.number,
       status: order.status,
+      fulfillmentMethod: order.fulfillmentMethod,
       totalCents: order.totalCents,
       at: new Date().toISOString(),
     });
@@ -379,6 +380,7 @@ export const accountRoutes: FastifyPluginAsync = async (app) => {
       userId,
       number: order.number,
       status: order.status,
+      fulfillmentMethod: order.fulfillmentMethod,
       totalCents: order.totalCents,
       at: new Date().toISOString(),
     });

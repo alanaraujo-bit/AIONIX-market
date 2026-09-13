@@ -105,7 +105,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
         <div className="space-y-4 px-4 pt-2 pb-8">
           <section className={cn("grain relative overflow-hidden rounded-[24px] p-5", done ? "bg-card shadow-card" : "bg-brand text-white")}>
             <div className="flex items-center justify-between">
-              <StatusPill status={order.status} size="md" />
+              <StatusPill status={order.status} size="md" fulfillmentMethod={order.fulfillmentMethod} />
               {!done && (
                 <span className="flex items-center gap-1.5 text-[12.5px] font-semibold text-white/80">
                   <Clock3 className="size-3.5" /> {order.deliverySlot}
@@ -116,12 +116,12 @@ export function OrderDetailScreen({ id }: { id: string }) {
               {order.status === "pending" && "Recebemos seu pedido"}
               {order.status === "confirmed" && "Pedido confirmado pela loja"}
               {order.status === "picking" && "Separando seus produtos"}
-              {order.status === "out_for_delivery" && "Saiu para entrega!"}
+              {order.status === "out_for_delivery" && (order.fulfillmentMethod === "pickup" ? "Pronto para retirada!" : "Saiu para entrega!")}
               {order.status === "delivered" && (order.fulfillmentMethod === "pickup" ? "Retirado. Bom apetite!" : "Entregue. Bom apetite!")}
               {order.status === "cancelled" && "Pedido cancelado"}
             </p>
             <p className={cn("mt-1 text-[13.5px]", done ? "text-muted" : "text-white/75")}>
-              {order.status === "out_for_delivery" ? "O entregador está a caminho do seu endereço." : order.status === "delivered" ? "Obrigado por comprar na AIONIX Market." : order.status === "cancelled" ? "Nenhum valor foi cobrado." : "Atualizamos o status em tempo real."}
+              {order.status === "out_for_delivery" ? (order.fulfillmentMethod === "pickup" ? `Seu pedido está separado esperando por você. Informe o número ${formatOrderNumber(order.number)} no balcão.` : "O entregador está a caminho do seu endereço.") : order.status === "delivered" ? "Obrigado por comprar na AIONIX Market." : order.status === "cancelled" ? "Nenhum valor foi cobrado." : "Atualizamos o status em tempo real."}
             </p>
             {!done && <span aria-hidden className="absolute -right-10 -bottom-14 size-44 rounded-full bg-white/10" />}
           </section>

@@ -227,6 +227,7 @@ export const adminOpsRoutes: FastifyPluginAsync = async (app) => {
       userId: updated.userId,
       number: updated.number,
       status: updated.status,
+      fulfillmentMethod: updated.fulfillmentMethod,
       totalCents: updated.totalCents,
       at: new Date().toISOString(),
     });

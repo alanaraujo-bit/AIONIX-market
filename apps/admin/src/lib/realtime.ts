@@ -1,6 +1,6 @@
 "use client";
 
-import { formatBRL, formatOrderNumber, ORDER_STATUS_SHORT, type OrderStatus } from "@aionix/shared";
+import { formatBRL, formatOrderNumber, orderStatusShort, type OrderStatus } from "@aionix/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ interface OrderEvent {
   orderId: string;
   number: number;
   status: OrderStatus;
+  fulfillmentMethod?: "delivery" | "pickup";
   totalCents: number;
 }
 
@@ -73,7 +74,7 @@ export function useAdminRealtime(enabled: boolean) {
           const e = JSON.parse((ev as MessageEvent).data) as OrderEvent;
           invalidate();
           if (e.status === "cancelled") toast.warning(`Pedido ${formatOrderNumber(e.number)} cancelado pelo cliente`);
-          else toast(`${formatOrderNumber(e.number)} · ${ORDER_STATUS_SHORT[e.status]}`);
+          else toast(`${formatOrderNumber(e.number)} · ${orderStatusShort(e.status, e.fulfillmentMethod)}`);
         });
         es.onerror = () => {
           es?.close();
