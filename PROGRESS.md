@@ -34,4 +34,7 @@ Persistent log so any session can resume. Newest entries at the bottom of each s
 - 2026-09-13: Vercel projects criados e ligados ao GitHub (root dirs `apps/web`, `apps/admin`).
 - 2026-09-13: Catálogo seedado (129 produtos, 12 categorias, 2 promoções, 3 banners) com imagens do Open Food Facts / Wikimedia Commons reprocessadas para o bucket.
 - 2026-09-13: PWA do consumidor completa: home, busca, categoria, produto, carrinho, checkout, pedidos (timeline realtime), conta, endereços. Fluxo E2E validado via Playwright.
-- 2026-09-13: Próximo: painel admin (dashboard, produtos, categorias, promoções, banners, pedidos), manifest/ícones/SW do PWA.
+- 2026-09-13: PWA: manifest, service worker (offline + cache de mídia), ícones gerados (`scripts/icons.mjs`).
+- 2026-09-13: Fix Vercel: `API_ORIGIN` precisava estar em `turbo.json` (`globalEnv`/`env`), senão o rewrite `/api` caía. Mídia agora usa URLs relativas `/api/media/...`.
+- 2026-09-13: Admin completo (login, dashboard c/ gráfico, fila de pedidos c/ SSE + som, detalhe do pedido, produtos c/ upload/inline stock/bulk, categorias DnD, promoções, banners c/ prévia, mídia, clientes, configurações). E2E realtime (`scripts/realtime-e2e.mjs`) verde. Produção validada em ambos os domínios.
+- Próximo: revisão do advisor, polimento (imagens Commons com fundo cinza → trim mais agressivo), testes unitários de pricing, README.
