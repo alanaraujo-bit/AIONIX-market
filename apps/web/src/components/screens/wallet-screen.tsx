@@ -165,7 +165,7 @@ export function WalletScreen() {
             <section className="mt-7">
               <h3 className="mb-3 px-1 font-display text-[19px] font-bold tracking-[-0.025em]">Prêmios que você pode trocar</h3>
               <div className="grid grid-cols-2 gap-3">
-                {p.rewards.map((r, i) => <RewardCard key={r.id} reward={r} balance={0} index={i} onSelect={() => router.push("/entrar?next=/moedas&mode=cadastro")} />)}
+                {p.rewards.map((r, i) => <RewardCard key={r.id} reward={r} balance={0} index={i} guest onSelect={() => router.push("/entrar?next=/moedas&mode=cadastro")} />)}
               </div>
             </section>
           )}

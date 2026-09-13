@@ -41,8 +41,8 @@ export function RewardArt({ reward, size = "md" }: { reward: Pick<Reward, "type"
   );
 }
 
-export function RewardCard({ reward, balance, onSelect, index = 0 }: { reward: Reward; balance: number; onSelect: (r: Reward) => void; index?: number }) {
-  const affordable = balance >= reward.costCoins;
+export function RewardCard({ reward, balance, onSelect, index = 0, guest = false }: { reward: Reward; balance: number; onSelect: (r: Reward) => void; index?: number; guest?: boolean }) {
+  const affordable = !guest && balance >= reward.costCoins;
   const missing = reward.costCoins - balance;
   return (
     <motion.button
@@ -65,7 +65,7 @@ export function RewardCard({ reward, balance, onSelect, index = 0 }: { reward: R
       {reward.minOrderCents > 0 && <p className="mt-1 truncate text-[11px] font-semibold text-faint">Pedido mín. {formatBRL(reward.minOrderCents)}</p>}
       <span className={cn("mt-auto pt-3 inline-flex h-11 items-center gap-1.5 text-[12.5px] font-bold")}>
         <span className={cn("inline-flex h-8 items-center gap-1.5 rounded-full px-3", affordable ? "bg-coin-3 text-coin-ink" : "bg-line-2 text-ink-2")}>
-        {affordable ? "Resgatar" : (<><Lock className="size-3.5" strokeWidth={2.6} /> Faltam {missing.toLocaleString("pt-BR")}</>)}
+        {guest ? "Criar conta" : affordable ? "Resgatar" : (<><Lock className="size-3.5" strokeWidth={2.6} /> Faltam {missing.toLocaleString("pt-BR")}</>)}
         </span>
       </span>
       {reward.stock !== null && reward.stock <= 5 && <span className="absolute top-3 right-3 translate-y-8 rounded-full bg-sale px-1.5 py-0.5 text-[10px] font-extrabold text-white">Últimos {reward.stock}</span>}
