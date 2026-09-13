@@ -19,6 +19,7 @@ const NAV = [
   { href: "/banners", label: "Banners", icon: Megaphone },
   { href: "/midia", label: "Mídia", icon: ImageIcon },
   { href: "/clientes", label: "Clientes", icon: Users },
+  { href: "/conquistas", label: "Conquistas", icon: Tags },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 

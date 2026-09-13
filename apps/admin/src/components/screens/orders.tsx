@@ -99,7 +99,7 @@ export function OrdersScreen() {
               </thead>
               <tbody className="divide-y divide-line-2">
                 {data.items.map((o) => {
-                  const next = nextOrderStatus(o.status);
+                  const next = nextOrderStatus(o.status, o.fulfillmentMethod);
                   return (
                     <tr key={o.id} className="group hover:bg-line-2/40">
                       <td className="px-5 py-3">
@@ -113,16 +113,16 @@ export function OrdersScreen() {
                         <span className="block text-[12px] text-muted">{o.itemCount} {o.itemCount === 1 ? "item" : "itens"}</span>
                       </td>
                       <td className="max-w-[220px] px-3 py-3">
-                        <span className="block truncate font-medium">{o.address.district}, {o.address.city}</span>
+                        <span className="block truncate font-medium">{o.fulfillmentMethod === "pickup" ? "Retirada na loja" : `${o.address.district}, ${o.address.city}`}</span>
                         <span className="block truncate text-[12px] text-muted">{o.deliverySlot}</span>
                       </td>
-                      <td className="px-3 py-3 text-ink-2">{PAYMENT_METHOD_LABEL[o.paymentMethod]}</td>
+                      <td className="px-3 py-3 text-ink-2">{o.fulfillmentMethod === "pickup" && o.paymentMethod === "card_on_delivery" ? "Cartão na retirada" : PAYMENT_METHOD_LABEL[o.paymentMethod]}</td>
                       <td className="px-3 py-3"><StatusPill status={o.status} /></td>
                       <td className="tabular px-3 py-3 text-right font-bold">{formatBRL(o.totalCents)}</td>
                       <td className="px-5 py-3 text-right">
                         {next ? (
                           <Button size="sm" variant={o.status === "pending" ? "primary" : "outline"} loading={advance.isPending && advance.variables?.id === o.id} onClick={() => advance.mutate({ id: o.id, status: next })}>
-                            {ORDER_STATUS_LABEL[next].replace("Pedido ", "")} <ArrowRight className="size-3.5" />
+                            {o.fulfillmentMethod === "pickup" && next === "delivered" ? "Confirmar retirada" : ORDER_STATUS_LABEL[next].replace("Pedido ", "")} <ArrowRight className="size-3.5" />
                           </Button>
                         ) : (
                           <Link href={`/pedidos/${o.id}`} className="text-[12.5px] font-semibold text-brand-2">Detalhes</Link>

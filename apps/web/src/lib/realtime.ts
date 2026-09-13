@@ -39,6 +39,7 @@ export function RealtimeBridge() {
           attempts = 0;
         });
         es.addEventListener("order.updated", (ev) => {
+          void qc.invalidateQueries({ queryKey: ["achievements"] });
           const e = JSON.parse((ev as MessageEvent).data) as OrderEvent;
           void qc.invalidateQueries({ queryKey: ["orders"] });
           void qc.invalidateQueries({ queryKey: ["order", e.orderId] });

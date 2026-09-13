@@ -444,6 +444,7 @@ export const adminCatalogRoutes: FastifyPluginAsync = async (app) => {
           orders: sql<number>`(select count(*)::int from ${o} where ${o.userId} = ${u.id})`,
           spentCents: sql<number>`(select coalesce(sum(${o.totalCents}), 0)::int from ${o} where ${o.userId} = ${u.id} and ${o.status} <> 'cancelled')`,
           lastOrderAt: sql<string | null>`(select max(${o.createdAt}) from ${o} where ${o.userId} = ${u.id})`,
+          coinBalance: sql<number>`(select coalesce(sum(${schema.coinEntries.coins}), 0)::int from ${schema.coinEntries} where ${schema.coinEntries.userId} = ${u.id} and ${schema.coinEntries.status} = 'settled')`,
         })
         .from(u)
         .where(where)

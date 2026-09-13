@@ -1,6 +1,6 @@
 "use client";
 
-import { formatBRL, formatOrderNumber, nextOrderStatus, ORDER_FLOW, ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, type OrderStatus } from "@aionix/shared";
+import { formatBRL, formatOrderNumber, nextOrderStatus, orderFlow, ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, type OrderStatus } from "@aionix/shared";
 import { ArrowRight, Clock3, MapPin, Phone, Printer, User, Wallet, XCircle } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
@@ -26,7 +26,9 @@ export function OrderDetailScreen({ id }: { id: string }) {
       </div>
     );
   }
-  const next = nextOrderStatus(order.status);
+  const pickup = order.fulfillmentMethod === "pickup";
+  const ORDER_FLOW = orderFlow(order.fulfillmentMethod);
+  const next = nextOrderStatus(order.status, order.fulfillmentMethod);
   const final = order.status === "delivered" || order.status === "cancelled";
   const eventFor = (s: OrderStatus) => order.events?.filter((e) => e.status === s).at(-1);
 
@@ -48,7 +50,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
           {!final && <Button variant="danger" onClick={() => setCancelOpen(true)}><XCircle className="size-4" /> Cancelar</Button>}
           {next && (
             <Button loading={update.isPending} onClick={() => update.mutate({ status: next, note: note || undefined })}>
-              {ORDER_STATUS_LABEL[next]} <ArrowRight className="size-4" />
+              {pickup && next === "delivered" ? "Confirmar retirada pelo cliente" : ORDER_STATUS_LABEL[next]} <ArrowRight className="size-4" />
             </Button>
           )}
         </div>
@@ -69,7 +71,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
                     <div className={cn("flex items-center gap-2 rounded-xl px-3 py-2", active ? (s === "cancelled" ? "bg-sale text-white" : "bg-brand text-white") : done ? "bg-brand-soft text-brand" : "bg-line-2 text-faint")}>
                       <Icon className="size-4" strokeWidth={2.4} />
                       <span>
-                        <span className="block text-[12.5px] font-bold">{ORDER_STATUS_LABEL[s]}</span>
+                        <span className="block text-[12.5px] font-bold">{pickup && s === "delivered" ? "Retirado na loja" : ORDER_STATUS_LABEL[s]}</span>
                         {ev && <span className={cn("block text-[11px]", active ? "text-white/70" : "text-muted")}>{new Date(ev.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}{ev.note ? ` · ${ev.note}` : ""}</span>}
                       </span>
                     </div>
@@ -83,7 +85,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
                 <Input label="Observação para o cliente (opcional)" value={note} onChange={(e) => setNote(e.target.value.slice(0, 200))} placeholder="Ex.: Substituímos o leite por outra marca" className="min-w-[260px] flex-1" />
                 {next && (
                   <p className="pb-2.5 text-[12.5px] text-muted">
-                    A observação é enviada junto com <strong className="font-semibold text-ink">{ORDER_STATUS_LABEL[next]}</strong>.
+                    A observação é enviada junto com <strong className="font-semibold text-ink">{pickup && next === "delivered" ? "Retirada concluída" : ORDER_STATUS_LABEL[next]}</strong>.
                   </p>
                 )}
               </div>
@@ -121,7 +123,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
               <tfoot className="border-t border-line text-[13.5px]">
                 <tr><td colSpan={3} className="px-5 pt-3 text-right text-muted">Subtotal</td><td className="tabular px-5 pt-3 text-right">{formatBRL(order.subtotalCents)}</td></tr>
                 {order.discountCents > 0 && <tr><td colSpan={3} className="px-5 pt-1 text-right text-sale">Descontos</td><td className="tabular px-5 pt-1 text-right text-sale">− {formatBRL(order.discountCents)}</td></tr>}
-                <tr><td colSpan={3} className="px-5 pt-1 text-right text-muted">Entrega</td><td className="tabular px-5 pt-1 text-right">{order.deliveryFeeCents ? formatBRL(order.deliveryFeeCents) : "Grátis"}</td></tr>
+                <tr><td colSpan={3} className="px-5 pt-1 text-right text-muted">{pickup ? "Retirada" : "Entrega"}</td><td className="tabular px-5 pt-1 text-right">{order.deliveryFeeCents ? formatBRL(order.deliveryFeeCents) : "Grátis"}</td></tr>
                 <tr><td colSpan={3} className="px-5 pt-2 pb-4 text-right text-[15px] font-bold">Total</td><td className="tabular px-5 pt-2 pb-4 text-right text-[18px] font-bold">{formatBRL(order.totalCents)}</td></tr>
               </tfoot>
             </table>
@@ -136,13 +138,13 @@ export function OrderDetailScreen({ id }: { id: string }) {
               <a href={`tel:${order.customer.phone.replace(/\D/g, "")}`} className="mt-1 flex items-center gap-2 text-[13px] font-semibold text-brand-2"><Phone className="size-3.5" /> {order.customer.phone}</a>
             )}
           </Card>
-          <Card title="Entrega">
-            <p className="flex items-start gap-2 text-[13.5px]"><MapPin className="mt-0.5 size-4 shrink-0 text-brand-2" /><span>{order.address.street}, {order.address.number}{order.address.complement ? ` · ${order.address.complement}` : ""}<br /><span className="text-muted">{order.address.district} · {order.address.city}/{order.address.state} · {order.address.zip}</span>{order.address.reference && <><br /><span className="text-muted">Ref.: {order.address.reference}</span></>}</span></p>
+          <Card title={pickup ? "Retirada na loja" : "Entrega"}>
+            <p className="flex items-start gap-2 text-[13.5px]"><MapPin className="mt-0.5 size-4 shrink-0 text-brand-2" /><span>{order.address.street}{order.address.number ? `, ${order.address.number}` : ""}{order.address.complement ? ` · ${order.address.complement}` : ""}{!pickup && <><br /><span className="text-muted">{order.address.district} · {order.address.city}/{order.address.state} · {order.address.zip}</span></>}{order.address.reference && <><br /><span className="text-muted">Ref.: {order.address.reference}</span></>}</span></p>
             <p className="mt-3 flex items-center gap-2 text-[13.5px]"><Clock3 className="size-4 text-brand-2" /> {order.deliverySlot}</p>
-            <p className="mt-1 text-[12.5px] text-muted">Recebe: {order.address.recipient}</p>
+            <p className="mt-1 text-[12.5px] text-muted">{pickup ? "Local" : "Recebe"}: {order.address.recipient}</p>
           </Card>
           <Card title="Pagamento">
-            <p className="flex items-center gap-2 text-[13.5px] font-semibold"><Wallet className="size-4 text-brand-2" /> {PAYMENT_METHOD_LABEL[order.paymentMethod]} na entrega</p>
+            <p className="flex items-center gap-2 text-[13.5px] font-semibold"><Wallet className="size-4 text-brand-2" /> {order.paymentMethod === "card_on_delivery" ? "Cartão" : PAYMENT_METHOD_LABEL[order.paymentMethod]} {pickup ? "na retirada" : "na entrega"}</p>
             {order.changeForCents ? <p className="mt-1 text-[13px] text-muted">Troco para {formatBRL(order.changeForCents)} (levar {formatBRL(order.changeForCents - order.totalCents)})</p> : null}
             {order.notes && <p className="mt-3 rounded-xl bg-citrus-soft px-3 py-2 text-[13px] text-[#6d4700]">“{order.notes}”</p>}
           </Card>

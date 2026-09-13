@@ -29,16 +29,21 @@ export const ORDER_STATUS_SHORT: Record<OrderStatus, string> = {
 /** Linear fulfillment flow; cancellation is allowed from any non-final state. */
 export const ORDER_FLOW: OrderStatus[] = ["pending", "confirmed", "picking", "out_for_delivery", "delivered"];
 
-export function nextOrderStatus(status: OrderStatus): OrderStatus | null {
-  const i = ORDER_FLOW.indexOf(status);
-  if (i < 0 || i >= ORDER_FLOW.length - 1) return null;
-  return ORDER_FLOW[i + 1] ?? null;
+export function orderFlow(fulfillmentMethod: "delivery" | "pickup" = "delivery"): OrderStatus[] {
+  return fulfillmentMethod === "pickup" ? ORDER_FLOW.filter((status) => status !== "out_for_delivery") : ORDER_FLOW;
 }
 
-export function canTransition(from: OrderStatus, to: OrderStatus): boolean {
+export function nextOrderStatus(status: OrderStatus, fulfillmentMethod: "delivery" | "pickup" = "delivery"): OrderStatus | null {
+  const flow = orderFlow(fulfillmentMethod);
+  const i = flow.indexOf(status);
+  if (i < 0 || i >= flow.length - 1) return null;
+  return flow[i + 1] ?? null;
+}
+
+export function canTransition(from: OrderStatus, to: OrderStatus, fulfillmentMethod: "delivery" | "pickup" = "delivery"): boolean {
   if (from === "delivered" || from === "cancelled") return false;
   if (to === "cancelled") return true;
-  return ORDER_FLOW.indexOf(to) === ORDER_FLOW.indexOf(from) + 1;
+  return nextOrderStatus(from, fulfillmentMethod) === to;
 }
 
 export const PAYMENT_METHODS = ["pix", "card_on_delivery", "cash"] as const;
@@ -47,4 +52,38 @@ export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   pix: "Pix",
   card_on_delivery: "Cartão na entrega",
   cash: "Dinheiro",
+};
+
+// ---- Loyalty (coins) --------------------------------------------------------
+export const REWARD_TYPES = ["discount_fixed", "discount_percent", "free_delivery", "product", "gift"] as const;
+export type RewardType = (typeof REWARD_TYPES)[number];
+export const REWARD_TYPE_LABEL: Record<RewardType, string> = {
+  discount_fixed: "Desconto em R$",
+  discount_percent: "Desconto em %",
+  free_delivery: "Frete grátis",
+  product: "Produto grátis",
+  gift: "Brinde / prêmio na loja",
+};
+
+export const COIN_ENTRY_TYPES = ["earn", "bonus", "redeem", "refund", "adjust", "reversal"] as const;
+export type CoinEntryType = (typeof COIN_ENTRY_TYPES)[number];
+export const COIN_ENTRY_STATUSES = ["pending", "settled", "void"] as const;
+export type CoinEntryStatus = (typeof COIN_ENTRY_STATUSES)[number];
+
+export const REDEMPTION_STATUSES = ["available", "applied", "used", "cancelled"] as const;
+export type RedemptionStatus = (typeof REDEMPTION_STATUSES)[number];
+export const REDEMPTION_STATUS_LABEL: Record<RedemptionStatus, string> = {
+  available: "Disponível",
+  applied: "Em um pedido",
+  used: "Utilizado",
+  cancelled: "Cancelado",
+};
+
+/** When earned coins become spendable. */
+export const AWARD_ON = ["created", "confirmed", "delivered"] as const;
+export type AwardOn = (typeof AWARD_ON)[number];
+export const AWARD_ON_LABEL: Record<AwardOn, string> = {
+  created: "Assim que o pedido é feito",
+  confirmed: "Quando a loja confirma o pedido",
+  delivered: "Quando o pedido é entregue",
 };

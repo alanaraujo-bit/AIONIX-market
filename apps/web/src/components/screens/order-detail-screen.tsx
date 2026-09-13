@@ -116,7 +116,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
               {order.status === "confirmed" && "Pedido confirmado pela loja"}
               {order.status === "picking" && "Separando seus produtos"}
               {order.status === "out_for_delivery" && "Saiu para entrega!"}
-              {order.status === "delivered" && "Entregue. Bom apetite!"}
+              {order.status === "delivered" && (order.fulfillmentMethod === "pickup" ? "Retirado. Bom apetite!" : "Entregue. Bom apetite!")}
               {order.status === "cancelled" && "Pedido cancelado"}
             </p>
             <p className={cn("mt-1 text-[13.5px]", done ? "text-muted" : "text-white/75")}>
@@ -127,7 +127,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
 
           <section className="rounded-[22px] bg-card p-5 shadow-card">
             <h2 className="mb-5 text-[13px] font-bold tracking-[0.04em] text-muted uppercase">Acompanhamento</h2>
-            <OrderTimeline status={order.status} events={order.events} />
+            <OrderTimeline status={order.status} events={order.events} fulfillmentMethod={order.fulfillmentMethod} />
           </section>
 
           <section className="rounded-[22px] bg-card p-4 shadow-card">
@@ -149,7 +149,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
             <div className="mt-4 space-y-2 border-t border-line pt-3 text-[14px]">
               <div className="flex justify-between text-muted"><span>Subtotal</span><span className="tabular">{formatBRL(order.subtotalCents)}</span></div>
               {order.discountCents > 0 && <div className="flex justify-between text-sale"><span>Descontos</span><span className="tabular">− {formatBRL(order.discountCents)}</span></div>}
-              <div className="flex justify-between text-muted"><span>Entrega</span><span className="tabular">{order.deliveryFeeCents ? formatBRL(order.deliveryFeeCents) : "Grátis"}</span></div>
+              <div className="flex justify-between text-muted"><span>{order.fulfillmentMethod === "pickup" ? "Retirada na loja" : "Entrega"}</span><span className="tabular">{order.deliveryFeeCents ? formatBRL(order.deliveryFeeCents) : "Grátis"}</span></div>
               <div className="flex items-baseline justify-between pt-1"><span className="text-[15px] font-bold">Total</span><span className="tabular font-display text-[22px] font-bold tracking-[-0.02em]">{formatBRL(order.totalCents)}</span></div>
             </div>
           </section>
@@ -159,14 +159,14 @@ export function OrderDetailScreen({ id }: { id: string }) {
               <MapPin className="mt-0.5 size-5 shrink-0 text-brand-2" />
               <div className="text-[13.5px]">
                 <p className="font-bold">{order.address.recipient}</p>
-                <p className="text-ink-2">{order.address.street}, {order.address.number}{order.address.complement ? ` · ${order.address.complement}` : ""}</p>
-                <p className="text-muted">{order.address.district} · {order.address.city}/{order.address.state} · {order.address.zip}</p>
+                <p className="text-ink-2">{order.address.street}{order.address.number ? `, ${order.address.number}` : ""}{order.address.complement ? ` · ${order.address.complement}` : ""}</p>
+                {order.fulfillmentMethod !== "pickup" && <p className="text-muted">{order.address.district} · {order.address.city}/{order.address.state} · {order.address.zip}</p>}
               </div>
             </div>
             <div className="flex gap-3 rounded-[20px] bg-card p-4 shadow-card">
               <Wallet className="mt-0.5 size-5 shrink-0 text-brand-2" />
               <div className="text-[13.5px]">
-                <p className="font-bold">{PAYMENT_METHOD_LABEL[order.paymentMethod]} na entrega</p>
+                <p className="font-bold">{order.paymentMethod === "card_on_delivery" ? "Cartão" : PAYMENT_METHOD_LABEL[order.paymentMethod]} {order.fulfillmentMethod === "pickup" ? "na retirada" : "na entrega"}</p>
                 {order.changeForCents ? <p className="text-muted">Troco para {formatBRL(order.changeForCents)}</p> : null}
                 {order.notes && <p className="mt-1 text-ink-2">“{order.notes}”</p>}
               </div>

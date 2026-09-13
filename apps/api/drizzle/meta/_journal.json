@@ -29,6 +29,20 @@
       "when": 1789316005570,
       "tag": "0003_club_everyone",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789317932948,
+      "tag": "0004_loyalty",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789318569822,
+      "tag": "0005_far_ma_gnuci",
+      "breakpoints": true
     }
   ]
 }

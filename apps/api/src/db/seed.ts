@@ -167,6 +167,20 @@ async function main() {
     ]);
   }
 
+  console.log("→ loyalty rewards");
+  const [existingReward] = await db.select({ id: schema.rewards.id }).from(schema.rewards).limit(1);
+  if (!existingReward) {
+    const cafe = productIdBySlug.get("cafe-pilao-tradicional") ?? null;
+    await db.insert(schema.rewards).values([
+      { name: "R$ 5 de desconto", description: "Vale em qualquer pedido.", type: "discount_fixed", costCoins: 50, value: 500, minOrderCents: 3000, sortOrder: 0 },
+      { name: "Frete grátis", description: "Entrega por nossa conta no próximo pedido.", type: "free_delivery", costCoins: 80, minOrderCents: 0, sortOrder: 1 },
+      { name: "R$ 15 de desconto", description: "Para uma compra maior.", type: "discount_fixed", costCoins: 140, value: 1500, minOrderCents: 8000, sortOrder: 2 },
+      { name: "10% off no pedido", description: "Até R$ 30 de desconto.", type: "discount_percent", costCoins: 200, value: 10, maxDiscountCents: 3000, minOrderCents: 5000, sortOrder: 3 },
+      ...(cafe ? [{ name: "Café grátis", description: "Um pacote de café por nossa conta.", type: "product" as const, costCoins: 180, productId: cafe, minOrderCents: 4000, stock: 50, sortOrder: 4 }] : []),
+      { name: "Ecobag AIONIX", description: "Retire na loja ou peça ao entregador.", type: "gift", costCoins: 300, stock: 20, maxPerCustomer: 1, sortOrder: 5 },
+    ]);
+  }
+
   console.log("→ demo customer");
   const email = "cliente@aionix.market";
   const [demo] = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.email, email));

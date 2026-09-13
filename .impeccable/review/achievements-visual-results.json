@@ -1,0 +1,8 @@
+{
+  "results": [
+    "consumer mobile: collection, earned filter, detail, Escape, search empty passed",
+    "consumer desktop: collection, earned filter, detail, Escape, search empty passed",
+    "admin: catalog, editor, recipients opened"
+  ],
+  "errors": []
+}

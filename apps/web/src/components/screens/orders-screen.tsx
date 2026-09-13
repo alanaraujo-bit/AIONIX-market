@@ -29,7 +29,7 @@ function OrderCard({ order, index }: { order: OrderListItem; index: number }) {
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="tabular text-[15px] font-bold tracking-[-0.01em]">{formatOrderNumber(order.number)}</p>
-            <p className="text-[12.5px] font-medium text-muted">{fmtDate(order.createdAt)}</p>
+            <p className="text-[12.5px] font-medium text-muted">{fmtDate(order.createdAt)}{order.fulfillmentMethod === "pickup" ? " · Retirada na loja" : ""}</p>
           </div>
           <StatusPill status={order.status} />
         </div>

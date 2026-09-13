@@ -165,6 +165,7 @@ export function AccountScreen() {
 
         <section className="overflow-hidden rounded-[22px] bg-card shadow-card">
           {[
+            { href: "/conquistas", icon: Sparkles, label: "Minhas conquistas", sub: "Sua coleção de medalhas e próximos desafios" },
             { href: "/pedidos", icon: Receipt, label: "Meus pedidos", sub: "Histórico e acompanhamento" },
             { href: "/conta/enderecos", icon: MapPin, label: "Endereços", sub: "Gerencie locais de entrega" },
             { href: "/ofertas", icon: Sparkles, label: "Ofertas do dia", sub: "Promoções ativas agora" },

@@ -58,7 +58,9 @@ export function CheckoutScreen() {
   const { user, loading: sessionLoading } = useSession();
   const items = useCart((s) => s.items);
   const clear = useCart((s) => s.clear);
-  const { quote, loading: quoteLoading } = useCartQuote();
+  const [fulfillmentMethod, setFulfillmentMethod] = useState<"delivery" | "pickup">("delivery");
+  const pickup = fulfillmentMethod === "pickup";
+  const { quote, loading: quoteLoading } = useCartQuote(fulfillmentMethod);
   const addresses = useAddresses(!!user);
 
   const [addressId, setAddressId] = useState<string | null>(null);
@@ -107,13 +109,14 @@ export function CheckoutScreen() {
   });
 
   const changeCents = Math.round(Number(changeFor.replace(/\./g, "").replace(",", ".")) * 100) || 0;
-  const canSubmit = !!address && !!quote && quote.lines.every((l) => l.available) && !quoteLoading && (payment !== "cash" || changeFor === "" || changeCents >= quote.totalCents);
+  const canSubmit = (pickup ? !!store.data?.pickupEnabled : !!address) && !!quote && quote.lines.every((l) => l.available) && !quoteLoading && (payment !== "cash" || changeFor === "" || changeCents >= quote.totalCents);
 
   const submit = () => {
-    if (!address || !quote) return;
+    if ((!pickup && !address) || !quote) return;
     place.mutate({
       items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-      addressId: address.id,
+      addressId: pickup ? undefined : address?.id,
+      fulfillmentMethod,
       paymentMethod: payment,
       changeForCents: payment === "cash" && changeCents ? changeCents : undefined,
       deliverySlot: slotLabel,
@@ -144,16 +147,31 @@ export function CheckoutScreen() {
       <div className="space-y-7 pt-2 pb-8">
         <Section
           step={1}
-          title="Entrega"
+          title="Como receber"
           action={
-            addresses.data && addresses.data.length > 0 ? (
+            !pickup && addresses.data && addresses.data.length > 0 ? (
               <button type="button" onClick={() => setSheet("change")} className="text-[13px] font-semibold text-brand-2">
                 Trocar
               </button>
             ) : undefined
           }
         >
-          {addresses.isPending ? (
+          {store.data?.pickupEnabled && (
+            <div className="mb-3 grid grid-cols-2 gap-2" role="group" aria-label="Forma de recebimento">
+              {(["delivery", "pickup"] as const).map((method) => (
+                <button key={method} type="button" aria-pressed={fulfillmentMethod === method} onClick={() => setFulfillmentMethod(method)} className={cn("min-h-12 rounded-2xl px-3 py-3 text-[13px] font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand", fulfillmentMethod === method ? "bg-brand text-white" : "bg-card text-ink ring-1 ring-line")}>
+                  {method === "pickup" ? "Retirar na loja · grátis" : "Receber em casa"}
+                </button>
+              ))}
+            </div>
+          )}
+          {pickup ? (
+            <div className="rounded-2xl bg-card p-4 shadow-card">
+              <p className="flex items-center gap-2 text-[14px] font-bold"><MapPin className="size-5 text-brand" />{store.data?.name}</p>
+              <p className="mt-2 text-[13.5px] text-ink-2">{store.data?.pickupAddress}</p>
+              <p className="mt-2 text-[12.5px] text-muted">Retire com o número do pedido. O pagamento é feito na loja.</p>
+            </div>
+          ) : addresses.isPending ? (
             <Skeleton className="h-[84px] rounded-[20px]" />
           ) : address ? (
             <div className="flex items-start gap-3 rounded-[20px] bg-card p-4 shadow-card">
@@ -202,13 +220,13 @@ export function CheckoutScreen() {
                 <span className="flex items-center gap-1.5 text-[13.5px] font-bold">
                   <Clock3 className="size-3.5" /> {s.label}
                 </span>
-                <span className={cn("mt-0.5 block text-[11.5px] font-medium", slot === s.id ? "text-white/65" : "text-muted")}>{s.sub}</span>
+                <span className={cn("mt-0.5 block text-[11.5px] font-medium", slot === s.id ? "text-white/65" : "text-muted")}>{pickup && s.id === "asap" ? "Após a confirmação da loja" : s.sub}</span>
               </button>
             ))}
           </div>
         </Section>
 
-        <Section step={3} title="Pagamento na entrega">
+        <Section step={3} title={pickup ? "Pagamento na retirada" : "Pagamento na entrega"}>
           <div className="overflow-hidden rounded-[20px] bg-card shadow-card">
             {PAYMENTS.map((p, i) => (
               <button
@@ -219,8 +237,8 @@ export function CheckoutScreen() {
               >
                 <span className={cn("grid size-10 shrink-0 place-items-center rounded-2xl transition-colors", payment === p.id ? "bg-brand text-white" : "bg-line-2 text-ink-2")}>{p.icon}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[14.5px] font-bold">{PAYMENT_METHOD_LABEL[p.id]}</span>
-                  <span className="block text-[12.5px] text-muted">{p.hint}</span>
+                  <span className="block text-[14.5px] font-bold">{pickup && p.id === "card_on_delivery" ? "Cartão na retirada" : PAYMENT_METHOD_LABEL[p.id]}</span>
+                  <span className="block text-[12.5px] text-muted">{pickup && p.id === "pix" ? "QR Code apresentado na loja" : p.hint}</span>
                 </span>
                 <span className={cn("grid size-6 place-items-center rounded-full border-2 transition-colors", payment === p.id ? "border-brand bg-brand text-white" : "border-line")}>
                   {payment === p.id && <Check className="size-3.5" strokeWidth={3.5} />}
@@ -262,14 +280,14 @@ export function CheckoutScreen() {
               value={notes}
               onChange={(e) => setNotes(e.target.value.slice(0, 300))}
               rows={2}
-              placeholder="Observações para a entrega (portaria, campainha, substituições…)"
+              placeholder={pickup ? "Observações para a loja (substituições, retirada…)" : "Observações para a entrega (portaria, campainha, substituições…)"}
               className="mt-4 w-full resize-none rounded-2xl bg-canvas px-4 py-3 text-[14px] font-medium ring-1 ring-line outline-none placeholder:text-faint focus:ring-brand-3"
             />
             <div className="mt-4 space-y-2 border-t border-line pt-3 text-[14px]">
               <div className="flex justify-between text-muted"><span>Subtotal</span><span className="tabular">{quote ? formatBRL(quote.subtotalCents) : "—"}</span></div>
               {!!quote && quote.discountCents - quote.clubDiscountCents > 0 && <div className="flex justify-between text-sale"><span>Descontos</span><span className="tabular">− {formatBRL(quote.discountCents - quote.clubDiscountCents)}</span></div>}
               {!!quote?.clubDiscountCents && <div className="flex justify-between font-semibold text-club"><span className="flex items-center gap-1.5"><Crown className="size-3.5 text-club-gold" strokeWidth={2.8} fill="currentColor" /> Preço de Clube</span><span className="tabular">− {formatBRL(quote.clubDiscountCents)}</span></div>}
-              <div className="flex justify-between text-muted"><span>Entrega</span><span className={cn("tabular", quote?.deliveryFeeCents === 0 && "font-semibold text-brand-2")}>{quote ? (quote.deliveryFeeCents ? formatBRL(quote.deliveryFeeCents) : "Grátis") : "—"}</span></div>
+              <div className="flex justify-between text-muted"><span>{pickup ? "Retirada na loja" : "Entrega"}</span><span className={cn("tabular", quote?.deliveryFeeCents === 0 && "font-semibold text-brand-2")}>{quote ? (quote.deliveryFeeCents ? formatBRL(quote.deliveryFeeCents) : "Grátis") : "—"}</span></div>
               <div className="flex items-baseline justify-between pt-1"><span className="text-[15px] font-bold">Total</span><span className="tabular font-display text-[22px] font-bold tracking-[-0.02em]">{quote ? formatBRL(quote.totalCents) : "—"}</span></div>
             </div>
           </div>

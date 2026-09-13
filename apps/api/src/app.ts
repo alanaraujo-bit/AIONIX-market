@@ -11,10 +11,13 @@ import { HttpError } from "./lib/http";
 import { isAllowedOrigin } from "./lib/origins";
 import { storageDriver } from "./lib/storage";
 import { accountRoutes } from "./modules/account";
+import { achievementRoutes } from "./modules/achievements";
 import { adminCatalogRoutes } from "./modules/admin-catalog";
+import { adminLoyaltyRoutes } from "./modules/admin-loyalty";
 import { adminOpsRoutes } from "./modules/admin-ops";
 import { authRoutes } from "./modules/auth";
 import { catalogRoutes } from "./modules/catalog";
+import { loyaltyRoutes } from "./modules/loyalty";
 import { mediaRoutes } from "./modules/media";
 import { realtimeRoutes } from "./modules/realtime";
 
@@ -72,10 +75,13 @@ export async function buildApp() {
   await app.register(authRoutes, { prefix: "/api/auth" });
   await app.register(catalogRoutes, { prefix: "/api" });
   await app.register(accountRoutes, { prefix: "/api/me" });
+  await app.register(achievementRoutes, { prefix: "/api" });
+  await app.register(loyaltyRoutes, { prefix: "/api" });
   await app.register(realtimeRoutes, { prefix: "/api/realtime" });
   await app.register(mediaRoutes, { prefix: "/api" });
   await app.register(adminCatalogRoutes, { prefix: "/api/admin" });
   await app.register(adminOpsRoutes, { prefix: "/api/admin" });
+  await app.register(adminLoyaltyRoutes, { prefix: "/api/admin/loyalty" });
 
   return app;
 }

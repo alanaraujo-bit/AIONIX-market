@@ -7,7 +7,7 @@ import { api } from "./api";
 import { useCart, useHydrated } from "./cart";
 
 /** Authoritative server pricing for the current cart, debounced while the user edits quantities. */
-export function useCartQuote() {
+export function useCartQuote(fulfillmentMethod: "delivery" | "pickup" = "delivery") {
   const hydrated = useHydrated();
   const items = useCart((s) => s.items);
   const syncWithQuote = useCart((s) => s.syncWithQuote);
@@ -20,13 +20,14 @@ export function useCartQuote() {
   }, [key]);
 
   const q = useQuery({
-    queryKey: ["quote", debounced],
+    queryKey: ["quote", debounced, fulfillmentMethod],
     enabled: hydrated && debounced.length > 0,
     placeholderData: keepPreviousData,
     staleTime: 15_000,
     queryFn: () =>
       api<Quote>("/cart/quote", {
         body: {
+          fulfillmentMethod,
           items: debounced.split(",").map((pair) => {
             const [productId, quantity] = pair.split(":");
             return { productId: productId!, quantity: Number(quantity) };

@@ -1,11 +1,20 @@
-import type { Address, Order, OrderEvent, OrderItem, PublicUser } from "@aionix/shared";
+import type { Address, CoinEntryStatus, Order, OrderEvent, OrderItem, PublicUser } from "@aionix/shared";
 import type { schema } from "../db/client";
+import { describeReward, type RewardSnapshot } from "./loyalty-rules";
 
 type UserRow = typeof schema.users.$inferSelect;
 type AddressRow = typeof schema.addresses.$inferSelect;
 type OrderRow = typeof schema.orders.$inferSelect;
 type OrderItemRow = typeof schema.orderItems.$inferSelect;
 type OrderEventRow = typeof schema.orderEvents.$inferSelect;
+type RedemptionRow = typeof schema.redemptions.$inferSelect;
+
+/** Loyalty facts about an order that live outside the orders row. */
+export interface OrderLoyalty {
+  coinsStatus: CoinEntryStatus | null;
+  redemption: RedemptionRow | null;
+  rewardProductName?: string | null;
+}
 
 export function serializeUser(u: UserRow): PublicUser {
   return {
@@ -43,8 +52,10 @@ export function serializeOrder(
     items?: OrderItemRow[];
     events?: OrderEventRow[];
     customer?: { id: string; name: string; email: string; phone: string | null };
+    loyalty?: OrderLoyalty;
   } = {},
 ): Order {
+  const snap = extra.loyalty?.redemption ? (extra.loyalty.redemption.snapshot as RewardSnapshot) : null;
   return {
     id: o.id,
     number: o.number,
@@ -58,7 +69,21 @@ export function serializeOrder(
     deliverySlot: o.deliverySlot,
     notes: o.notes,
     address: o.address as Order["address"],
+    fulfillmentMethod: o.fulfillmentMethod,
     itemCount: o.itemCount,
+    coinsEarned: o.coinsEarned,
+    coinsStatus: extra.loyalty?.coinsStatus ?? (o.coinsEarned > 0 ? (o.status === "cancelled" ? "void" : o.status === "delivered" ? "settled" : "pending") : null),
+    rewardDiscountCents: o.rewardDiscountCents,
+    reward:
+      snap && extra.loyalty?.redemption
+        ? {
+            redemptionId: extra.loyalty.redemption.id,
+            name: snap.name,
+            type: snap.type,
+            label: describeReward(snap, extra.loyalty.rewardProductName ? { name: extra.loyalty.rewardProductName } : null),
+            code: extra.loyalty.redemption.code,
+          }
+        : null,
     createdAt: o.createdAt.toISOString(),
     updatedAt: o.updatedAt.toISOString(),
     items: extra.items?.map<OrderItem>((i) => ({
@@ -71,6 +96,7 @@ export function serializeOrder(
       quantity: i.quantity,
       totalCents: i.totalCents,
       viaClub: i.viaClub,
+      viaReward: i.viaReward,
     })),
     events: extra.events
       ?.slice()

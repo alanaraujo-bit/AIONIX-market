@@ -5,7 +5,9 @@ import { z } from "zod";
 import { db, schema } from "../db/client";
 import { endSession, hashPassword, startSession, verifyPassword } from "../lib/auth";
 import { conflict, forbidden, HttpError, parse } from "../lib/http";
+import { creditCoins } from "../lib/loyalty";
 import { serializeUser } from "../lib/serializers";
+import { getLoyaltySettings } from "../lib/settings";
 
 const authLimit = { config: { rateLimit: { max: 12, timeWindow: "1 minute" } } };
 
@@ -30,6 +32,10 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       })
       .returning();
     await startSession(req, reply, { userId: user!.id, role: user!.role });
+    const loyalty = await getLoyaltySettings();
+    if (loyalty.enabled && loyalty.signupBonusCoins > 0) {
+      await creditCoins(user!.id, loyalty.signupBonusCoins, "bonus", "Boas-vindas ao AIONIX Market");
+    }
     return reply.status(201).send({ user: serializeUser(user!) });
   });
 

@@ -108,6 +108,8 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
         name: settings.storeName,
         open: settings.storeOpen,
         etaMinutes: settings.etaMinutes,
+        pickupEnabled: settings.pickupEnabled,
+        pickupAddress: settings.pickupAddress,
         deliveryFeeCents: settings.deliveryFeeCents,
         freeDeliveryThresholdCents: settings.freeDeliveryThresholdCents,
         minimumOrderCents: settings.minimumOrderCents,
@@ -219,7 +221,7 @@ export const catalogRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.post("/cart/quote", async (req) => {
-    const { items } = parse(quoteSchema, req.body);
-    return quoteCart(items, { userId: req.auth?.userId });
+    const { items, redemptionId, fulfillmentMethod } = parse(quoteSchema, req.body);
+    return quoteCart(items, { userId: req.auth?.userId, redemptionId, fulfillmentMethod });
   });
 };

@@ -1,6 +1,8 @@
 import type { Address, Banner, Category, Order, Paginated, Product, PublicUser } from "@aionix/shared";
 
 export interface StoreInfo {
+  pickupEnabled: boolean;
+  pickupAddress: string;
   name: string;
   open: boolean;
   etaMinutes: number;

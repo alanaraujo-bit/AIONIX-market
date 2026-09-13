@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ORDER_STATUSES, PAYMENT_METHODS } from "./orders";
+import { AWARD_ON, ORDER_STATUSES, PAYMENT_METHODS, REWARD_TYPES } from "./orders";
 
 export const registerSchema = z.object({
   name: z.string().trim().min(2, "Informe seu nome").max(80),
@@ -43,17 +43,22 @@ export const cartLineSchema = z.object({
 export type CartLine = z.infer<typeof cartLineSchema>;
 
 export const quoteSchema = z.object({
+  fulfillmentMethod: z.enum(["delivery", "pickup"]).default("delivery"),
   items: z.array(cartLineSchema).max(200),
+  /** Voucher (loyalty redemption) to apply; validated server-side. */
+  redemptionId: z.string().uuid().nullable().optional(),
 });
 
 export const checkoutSchema = z.object({
   items: z.array(cartLineSchema).min(1, "Carrinho vazio").max(200),
-  addressId: z.string().uuid(),
+  fulfillmentMethod: z.enum(["delivery", "pickup"]).default("delivery"),
+  addressId: z.string().uuid().optional(),
   paymentMethod: z.enum(PAYMENT_METHODS),
   changeForCents: z.number().int().min(0).optional(),
   deliverySlot: z.string().max(40),
   notes: z.string().trim().max(300).optional().or(z.literal("")),
-});
+  redemptionId: z.string().uuid().nullable().optional(),
+}).refine((input) => input.fulfillmentMethod === "pickup" || !!input.addressId, { path: ["addressId"], message: "Selecione um endereço de entrega" });
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 
 export const productUnitSchema = z.enum(["un", "kg", "g", "l", "ml", "pct", "cx"]);
@@ -133,10 +138,63 @@ export const orderStatusUpdateSchema = z.object({
 
 export const settingsSchema = z.object({
   storeName: z.string().trim().min(2).max(60),
+  pickupEnabled: z.boolean().default(false),
+  pickupAddress: z.string().trim().max(300).default(""),
   deliveryFeeCents: z.number().int().min(0),
   freeDeliveryThresholdCents: z.number().int().min(0),
   minimumOrderCents: z.number().int().min(0),
   storeOpen: z.boolean(),
   etaMinutes: z.number().int().min(10).max(600),
-});
+}).refine((input) => !input.pickupEnabled || input.pickupAddress.length >= 10, { path: ["pickupAddress"], message: "Informe o endereço completo para retirada" });
 export type StoreSettings = z.infer<typeof settingsSchema>;
+
+// ---- Loyalty (coins) --------------------------------------------------------
+export const loyaltySettingsSchema = z.object({
+  enabled: z.boolean(),
+  /** Display name of the currency, e.g. "Moeda" / "Moedas". */
+  coinName: z.string().trim().min(1).max(20),
+  coinNamePlural: z.string().trim().min(1).max(24),
+  /** Emoji shown next to the coin name across the app (the coin itself is drawn in SVG). */
+  coinEmoji: z.string().trim().min(1).max(8),
+  /** Coins earned for every `earnPerCents` spent on products (after discounts). */
+  earnCoins: z.number().int().min(1).max(100_000),
+  earnPerCents: z.number().int().min(100).max(1_000_000),
+  /** Orders below this (products, after discounts) earn nothing. */
+  minOrderCents: z.number().int().min(0),
+  awardOn: z.enum(AWARD_ON),
+  /** Club members earn this much extra (0 = same as everyone; 100 = double). */
+  clubBonusPercent: z.number().int().min(0).max(300),
+  signupBonusCoins: z.number().int().min(0).max(100_000),
+  firstOrderBonusCoins: z.number().int().min(0).max(100_000),
+  /** Short pitch shown in the app (optional). */
+  tagline: z.string().trim().max(80),
+});
+export type LoyaltySettings = z.infer<typeof loyaltySettingsSchema>;
+
+export const rewardInputSchema = z
+  .object({
+    name: z.string().trim().min(2).max(60),
+    description: z.string().trim().max(200).default(""),
+    type: z.enum(REWARD_TYPES),
+    costCoins: z.number().int().min(1).max(1_000_000),
+    /** Cents for discount_fixed, percent for discount_percent, ignored otherwise. */
+    value: z.number().int().min(0).default(0),
+    maxDiscountCents: z.number().int().min(0).nullable().optional(),
+    productId: z.string().uuid().nullable().optional(),
+    imageUrl: z.string().url().nullable().optional(),
+    minOrderCents: z.number().int().min(0).default(0),
+    stock: z.number().int().min(0).nullable().optional(),
+    maxPerCustomer: z.number().int().min(1).nullable().optional(),
+    active: z.boolean().default(true),
+    sortOrder: z.number().int().default(0),
+  })
+  .refine((r) => r.type !== "discount_fixed" || r.value >= 1, { message: "Informe o valor do desconto", path: ["value"] })
+  .refine((r) => r.type !== "discount_percent" || (r.value >= 1 && r.value <= 100), { message: "Percentual entre 1 e 100", path: ["value"] })
+  .refine((r) => r.type !== "product" || !!r.productId, { message: "Escolha o produto", path: ["productId"] });
+export type RewardInput = z.infer<typeof rewardInputSchema>;
+
+export const redeemSchema = z.object({ rewardId: z.string().uuid() });
+export const coinAdjustSchema = z.object({
+  coins: z.number().int().min(-1_000_000).max(1_000_000).refine((n) => n !== 0, "Informe uma quantidade"),
+  note: z.string().trim().min(2, "Explique o motivo").max(120),
+});

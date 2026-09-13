@@ -1,7 +1,9 @@
-import type { Product, Quote, QuoteLine, StoreSettings } from "@aionix/shared";
-import { and, eq, gte, inArray, lte } from "drizzle-orm";
+import type { LoyaltySettings, Product, Quote, QuoteLine, StoreSettings } from "@aionix/shared";
+import { and, eq, gte, inArray, lte, ne, sql } from "drizzle-orm";
 import { db, schema } from "../db/client";
-import { getSettings } from "./settings";
+import { loadRedemptionForQuote, type QuoteReward } from "./loyalty";
+import { applyReward, computeEarnedCoins, describeReward } from "./loyalty-rules";
+import { getLoyaltySettings, getSettings } from "./settings";
 
 export interface ActivePromotion {
   id: string;
@@ -72,6 +74,15 @@ export interface PriceResult {
 export interface PriceOptions {
   /** Applies the club price when it beats promotions. Never set from cached catalog routes. */
   clubMember?: boolean;
+}
+
+export interface QuoteOptions extends PriceOptions {
+  fulfillmentMethod?: "delivery" | "pickup";
+  /** Loyalty program rules; omitted = program off (no coins, no reward). */
+  loyalty?: LoyaltySettings;
+  /** Voucher requested by the shopper (already checked to belong to them and be available). */
+  reward?: QuoteReward | null;
+  firstOrder?: boolean;
 }
 
 /** Maximum effective discount, whatever the campaign type (mirrors the 90% cap in `promotionInputSchema`). */
@@ -182,7 +193,7 @@ export function mergeCartItems(items: { productId: string; quantity: number }[])
   return merged;
 }
 
-type QuotableProduct = PriceableProduct & Pick<ProductRow, "name" | "imageUrl" | "unitLabel" | "stock">;
+export type QuotableProduct = PriceableProduct & Pick<ProductRow, "name" | "imageUrl" | "unitLabel" | "stock">;
 type QuoteSettings = Pick<StoreSettings, "deliveryFeeCents" | "freeDeliveryThresholdCents" | "minimumOrderCents">;
 
 /** Whether a user (by id) currently gets club prices. Anonymous callers never do. */
@@ -192,15 +203,26 @@ export async function isClubMember(userId: string | null | undefined): Promise<b
   return row?.clubMember ?? false;
 }
 
+/** True when the user has no non-cancelled order yet (first-order bonus). */
+export async function isFirstOrder(userId: string | null | undefined): Promise<boolean> {
+  if (!userId) return false;
+  const [row] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(schema.orders)
+    .where(and(eq(schema.orders.userId, userId), ne(schema.orders.status, "cancelled")));
+  return (row?.n ?? 0) === 0;
+}
+
 /** Authoritative cart pricing. Unknown/inactive products are dropped. */
 export async function quoteCart(
   items: { productId: string; quantity: number }[],
-  opts: { userId?: string | null } = {},
+  opts: { userId?: string | null; redemptionId?: string | null; fulfillmentMethod?: "delivery" | "pickup" } = {},
 ): Promise<PricedQuote> {
   const merged = mergeCartItems(items);
   const ids = [...merged.keys()];
-  const [settings, rows, promos, clubMember] = await Promise.all([
+  const [settings, loyalty, rows, promos, clubMember, firstOrder, reward] = await Promise.all([
     getSettings(),
+    getLoyaltySettings(),
     ids.length
       ? db
           .select()
@@ -209,8 +231,10 @@ export async function quoteCart(
       : Promise.resolve([] as ProductRow[]),
     getActivePromotions(),
     isClubMember(opts.userId),
+    isFirstOrder(opts.userId),
+    opts.redemptionId && opts.userId ? loadRedemptionForQuote(opts.redemptionId, opts.userId) : Promise.resolve(null),
   ]);
-  return buildQuote(merged, rows, promos, settings, { clubMember });
+  return buildQuote(merged, rows, promos, settings, { clubMember, firstOrder, loyalty, reward, fulfillmentMethod: opts.fulfillmentMethod });
 }
 
 /** Pure quote math: subtotal at list price, discount from promotions/club, delivery fee from settings. */
@@ -219,7 +243,7 @@ export function buildQuote(
   rows: QuotableProduct[],
   promos: ActivePromotion[],
   settings: QuoteSettings,
-  opts: PriceOptions = {},
+  opts: QuoteOptions = {},
 ): PricedQuote {
   const byId = new Map(rows.map((r) => [r.id, r]));
   const clubMember = !!opts.clubMember;
@@ -252,14 +276,71 @@ export function buildQuote(
       promotionId: price.promotionId,
       clubPriceCents: price.clubPriceCents,
       viaClub: price.viaClub,
+      viaReward: false,
     });
   }
 
-  const subtotalCents = lines.reduce((s, l) => s + l.originalUnitPriceCents * l.quantity, 0);
+  // Promotions and club first; the voucher is a final reduction on the net.
+  let subtotalCents = lines.reduce((s, l) => s + l.originalUnitPriceCents * l.quantity, 0);
   const discountCents = lines.reduce((s, l) => s + (l.originalUnitPriceCents - l.unitPriceCents) * l.quantity, 0);
-  const net = subtotalCents - discountCents;
-  const deliveryFeeCents =
-    lines.length === 0 || net >= settings.freeDeliveryThresholdCents ? 0 : settings.deliveryFeeCents;
+  let net = subtotalCents - discountCents;
+  let deliveryFeeCents =
+    opts.fulfillmentMethod === "pickup" || lines.length === 0 || net >= settings.freeDeliveryThresholdCents ? 0 : settings.deliveryFeeCents;
+
+  let reward: Quote["reward"] = null;
+  let rewardDiscountCents = 0;
+  let rewardError: string | null = null;
+  const loyalty = opts.loyalty;
+  if (opts.reward && loyalty?.enabled && lines.length > 0) {
+    const snap = opts.reward.snapshot;
+    const outcome = applyReward(snap, {
+      netCents: net,
+      deliveryFeeCents,
+      product: opts.reward.product,
+      productQtyInCart: snap.productId ? (merged.get(snap.productId) ?? 0) : 0,
+    });
+    if (!outcome.ok) rewardError = outcome.error;
+    else {
+      rewardDiscountCents = outcome.discountCents;
+      if (outcome.freeDelivery) deliveryFeeCents = 0;
+      if (outcome.freeProduct) {
+        // The free unit enters the subtotal at list price and leaves through rewardDiscountCents.
+        const fp = opts.reward.product!;
+        subtotalCents += fp.priceCents;
+        net += fp.priceCents;
+        lines.push({
+          productId: fp.id,
+          name: fp.name,
+          imageUrl: fp.imageUrl,
+          unitLabel: fp.unitLabel,
+          quantity: 1,
+          unitPriceCents: 0,
+          originalUnitPriceCents: fp.priceCents,
+          totalCents: 0,
+          available: true,
+          stock: fp.stock,
+          promotionId: null,
+          clubPriceCents: null,
+          viaClub: false,
+          viaReward: true,
+        });
+      }
+      reward = {
+        redemptionId: opts.reward.redemptionId,
+        rewardId: snap.rewardId,
+        name: snap.name,
+        type: snap.type,
+        label: describeReward(snap, outcome.freeProduct),
+        freeDelivery: outcome.freeDelivery,
+        productId: outcome.freeProduct?.id ?? null,
+      };
+    }
+  } else if (opts.reward && lines.length > 0) {
+    rewardError = "O programa de fidelidade está pausado no momento";
+  }
+
+  const paidForProducts = net - rewardDiscountCents;
+  const coinsToEarn = loyalty && lines.length > 0 ? computeEarnedCoins(paidForProducts, loyalty, { clubMember, firstOrder: opts.firstOrder }) : 0;
 
   return {
     lines,
@@ -269,9 +350,13 @@ export function buildQuote(
     clubPotentialCents,
     clubMember,
     deliveryFeeCents,
-    totalCents: net + deliveryFeeCents,
+    totalCents: paidForProducts + deliveryFeeCents,
     freeDeliveryThresholdCents: settings.freeDeliveryThresholdCents,
     minimumOrderCents: settings.minimumOrderCents,
-    itemCount: lines.reduce((s, l) => s + l.quantity, 0),
+    itemCount: lines.reduce((s, l) => s + (l.viaReward ? 0 : l.quantity), 0),
+    reward,
+    rewardDiscountCents,
+    rewardError,
+    coinsToEarn,
   };
 }

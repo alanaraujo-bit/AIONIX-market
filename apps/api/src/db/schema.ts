@@ -32,6 +32,10 @@ export const orderStatusEnum = pgEnum("order_status", [
 ]);
 export const paymentMethodEnum = pgEnum("payment_method", ["pix", "card_on_delivery", "cash"]);
 export const discountTypeEnum = pgEnum("discount_type", ["percent", "fixed"]);
+export const rewardTypeEnum = pgEnum("reward_type", ["discount_fixed", "discount_percent", "free_delivery", "product", "gift"]);
+export const coinEntryTypeEnum = pgEnum("coin_entry_type", ["earn", "bonus", "redeem", "refund", "adjust", "reversal"]);
+export const coinEntryStatusEnum = pgEnum("coin_entry_status", ["pending", "settled", "void"]);
+export const redemptionStatusEnum = pgEnum("redemption_status", ["available", "applied", "used", "cancelled"]);
 
 export const users = pgTable(
   "users",
@@ -210,6 +214,7 @@ export const orders = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "restrict" }),
     status: orderStatusEnum("status").notNull().default("pending"),
+    fulfillmentMethod: text("fulfillment_method", { enum: ["delivery", "pickup"] }).notNull().default("delivery"),
     subtotalCents: integer("subtotal_cents").notNull(),
     discountCents: integer("discount_cents").notNull().default(0),
     deliveryFeeCents: integer("delivery_fee_cents").notNull().default(0),
@@ -220,6 +225,10 @@ export const orders = pgTable(
     notes: text("notes"),
     address: jsonb("address").notNull(),
     itemCount: integer("item_count").notNull(),
+    /** Loyalty: coins this order earns (credited per settings.awardOn) and the voucher applied. */
+    coinsEarned: integer("coins_earned").notNull().default(0),
+    redemptionId: uuid("redemption_id"),
+    rewardDiscountCents: integer("reward_discount_cents").notNull().default(0),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -249,6 +258,8 @@ export const orderItems = pgTable(
     totalCents: integer("total_cents").notNull(),
     /** True when the unit price came from the club price rather than a promotion. */
     viaClub: boolean("via_club").notNull().default(false),
+    /** True for the free unit granted by a "product" reward. */
+    viaReward: boolean("via_reward").notNull().default(false),
   },
   (t) => [index("order_items_order_idx").on(t.orderId), index("order_items_promo_idx").on(t.promotionId)],
 );
@@ -291,3 +302,73 @@ export const settings = pgTable("settings", {
   value: jsonb("value").notNull(),
   updatedAt: updatedAt(),
 });
+
+// ---- Loyalty (coins) --------------------------------------------------------
+
+/** Prizes the store owner configures; shoppers trade coins for them. */
+export const rewards = pgTable("rewards", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  type: rewardTypeEnum("type").notNull(),
+  costCoins: integer("cost_coins").notNull(),
+  /** Cents for discount_fixed, percent for discount_percent. */
+  value: integer("value").notNull().default(0),
+  maxDiscountCents: integer("max_discount_cents"),
+  productId: uuid("product_id").references(() => products.id, { onDelete: "set null" }),
+  imageUrl: text("image_url"),
+  minOrderCents: integer("min_order_cents").notNull().default(0),
+  /** Null = unlimited. */
+  stock: integer("stock"),
+  maxPerCustomer: integer("max_per_customer"),
+  active: boolean("active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  redeemedCount: integer("redeemed_count").notNull().default(0),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+/** A voucher: coins already spent, reward waiting to be used on an order (or at the counter). */
+export const redemptions = pgTable(
+  "redemptions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    rewardId: uuid("reward_id").references(() => rewards.id, { onDelete: "set null" }),
+    code: text("code").notNull(),
+    coins: integer("coins").notNull(),
+    status: redemptionStatusEnum("status").notNull().default("available"),
+    /** Reward fields frozen at redemption time so later edits don't change what was bought. */
+    snapshot: jsonb("snapshot").notNull(),
+    orderId: uuid("order_id").references(() => orders.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+  },
+  (t) => [uniqueIndex("redemptions_code_idx").on(t.code), index("redemptions_user_idx").on(t.userId, t.status)],
+);
+
+/** Append-only coin ledger; balance = sum(coins) where status = settled. */
+export const coinEntries = pgTable(
+  "coin_entries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: coinEntryTypeEnum("type").notNull(),
+    status: coinEntryStatusEnum("status").notNull().default("settled"),
+    /** Signed: positive credits, negative debits. */
+    coins: integer("coins").notNull(),
+    orderId: uuid("order_id").references(() => orders.id, { onDelete: "set null" }),
+    redemptionId: uuid("redemption_id").references(() => redemptions.id, { onDelete: "set null" }),
+    note: text("note"),
+    /** When the shopper was shown this credit (null = celebrate on next visit). */
+    seenAt: timestamp("seen_at", { withTimezone: true }),
+    settledAt: timestamp("settled_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("coin_entries_user_idx").on(t.userId, t.status), index("coin_entries_order_idx").on(t.orderId)],
+);

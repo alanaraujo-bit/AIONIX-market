@@ -1,6 +1,6 @@
 "use client";
 
-import { ORDER_FLOW, ORDER_STATUS_LABEL, ORDER_STATUS_SHORT, type OrderEvent, type OrderStatus } from "@aionix/shared";
+import { orderFlow, ORDER_STATUS_LABEL, ORDER_STATUS_SHORT, type OrderEvent, type OrderStatus } from "@aionix/shared";
 import { Check, ClipboardCheck, PackageSearch, PartyPopper, Truck, XCircle, type LucideIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "./ui/primitives";
@@ -37,7 +37,8 @@ const fmtTime = (iso: string) =>
   new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).replace(".", "");
 
 /** Vertical stepper of the fulfillment flow, annotated with real event timestamps. */
-export function OrderTimeline({ status, events = [] }: { status: OrderStatus; events?: OrderEvent[] }) {
+export function OrderTimeline({ status, events = [], fulfillmentMethod = "delivery" }: { status: OrderStatus; events?: OrderEvent[]; fulfillmentMethod?: "delivery" | "pickup" }) {
+  const ORDER_FLOW = orderFlow(fulfillmentMethod);
   const cancelled = status === "cancelled";
   const currentIndex = cancelled ? ORDER_FLOW.indexOf(events.filter((e) => e.status !== "cancelled").at(-1)?.status ?? "pending") : ORDER_FLOW.indexOf(status);
   const eventFor = (s: OrderStatus) => events.filter((e) => e.status === s).at(-1);
@@ -73,7 +74,7 @@ export function OrderTimeline({ status, events = [] }: { status: OrderStatus; ev
               <Icon className="size-4" strokeWidth={2.5} />
             </motion.span>
             <div className="min-w-0 pt-1.5">
-              <p className={cn("text-[14.5px] font-bold tracking-[-0.01em]", done ? "text-ink" : "text-faint")}>{ORDER_STATUS_LABEL[s]}</p>
+              <p className={cn("text-[14.5px] font-bold tracking-[-0.01em]", done ? "text-ink" : "text-faint")}>{fulfillmentMethod === "pickup" && s === "delivered" ? "Retirado na loja" : ORDER_STATUS_LABEL[s]}</p>
               {ev ? (
                 <p className="mt-0.5 text-[12.5px] font-medium text-muted">
                   {fmtTime(ev.createdAt)}

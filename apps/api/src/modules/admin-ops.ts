@@ -4,6 +4,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { db, schema } from "../db/client";
 import { requireAdmin } from "../lib/auth";
 import { publish } from "../lib/events";
+import { syncOrderLoyalty } from "../lib/loyalty";
 import { conflict, notFound, pageParams, parse, str } from "../lib/http";
 import { serializeOrder } from "../lib/serializers";
 import { loadOrderDetail, restoreStock } from "./account";
@@ -206,17 +207,20 @@ export const adminOpsRoutes: FastifyPluginAsync = async (app) => {
   app.patch("/orders/:id/status", async (req) => {
     const { id } = req.params as { id: string };
     const { status, note } = parse(orderStatusUpdateSchema, req.body);
+    const after: (() => Promise<void>)[] = [];
     const updated = await db.transaction(async (tx) => {
       const [current] = await tx.select().from(o).where(eq(o.id, id)).for("update");
       if (!current) throw notFound("Pedido não encontrado");
-      if (!canTransition(current.status, status)) {
+      if (!canTransition(current.status, status, current.fulfillmentMethod)) {
         throw conflict("Transição de status inválida para este pedido", "INVALID_TRANSITION");
       }
       const [row] = await tx.update(o).set({ status }).where(eq(o.id, id)).returning();
       if (status === "cancelled") await restoreStock(tx, id);
+      after.push(...(await syncOrderLoyalty(tx, row!, status)));
       await tx.insert(schema.orderEvents).values({ orderId: id, status, note: note ?? null });
       return row!;
     });
+    for (const fn of after) await fn();
     publish({
       type: "order.updated",
       orderId: updated.id,

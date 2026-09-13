@@ -9,15 +9,15 @@ import { Button, Card, Input, PageHeader, Skeleton, Switch, cn, fieldErrors, mon
 
 export function SettingsScreen() {
   const { data, isPending } = useSettings();
-  const [form, setForm] = useState({ storeName: "", deliveryFee: "", freeThreshold: "", minimum: "", storeOpen: true, eta: "45" });
+  const [form, setForm] = useState({ storeName: "", deliveryFee: "", freeThreshold: "", minimum: "", storeOpen: true, eta: "45", pickupEnabled: false, pickupAddress: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   useEffect(() => {
-    if (data) setForm({ storeName: data.storeName, deliveryFee: moneyInput(data.deliveryFeeCents), freeThreshold: moneyInput(data.freeDeliveryThresholdCents), minimum: moneyInput(data.minimumOrderCents), storeOpen: data.storeOpen, eta: String(data.etaMinutes) });
+    if (data) setForm({ storeName: data.storeName, deliveryFee: moneyInput(data.deliveryFeeCents), freeThreshold: moneyInput(data.freeDeliveryThresholdCents), minimum: moneyInput(data.minimumOrderCents), storeOpen: data.storeOpen, eta: String(data.etaMinutes), pickupEnabled: data.pickupEnabled, pickupAddress: data.pickupAddress });
   }, [data]);
   const save = useAdminMutation((input: StoreSettings) => api("/admin/settings", { method: "PUT", body: input }), { invalidate: [["admin", "settings"]], success: "Configurações salvas" });
 
   const submit = () => {
-    const parsed = settingsSchema.safeParse({ storeName: form.storeName, deliveryFeeCents: parseMoney(form.deliveryFee), freeDeliveryThresholdCents: parseMoney(form.freeThreshold), minimumOrderCents: parseMoney(form.minimum), storeOpen: form.storeOpen, etaMinutes: Number(form.eta) });
+    const parsed = settingsSchema.safeParse({ storeName: form.storeName, deliveryFeeCents: parseMoney(form.deliveryFee), freeDeliveryThresholdCents: parseMoney(form.freeThreshold), minimumOrderCents: parseMoney(form.minimum), storeOpen: form.storeOpen, etaMinutes: Number(form.eta), pickupEnabled: form.pickupEnabled, pickupAddress: form.pickupAddress });
     if (!parsed.success) return setErrors(fieldErrors(parsed.error.issues.map((i) => ({ path: String(i.path[0]), message: i.message }))));
     setErrors({});
     save.mutate(parsed.data);
@@ -35,6 +35,11 @@ export function SettingsScreen() {
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <Input label="Tempo estimado de entrega" type="number" suffix="min" value={form.eta} onChange={(e) => setForm((f) => ({ ...f, eta: e.target.value }))} error={errors.etaMinutes} />
             </div>
+          </Card>
+          <Card title="Retirada na loja">
+            <Switch checked={form.pickupEnabled} onChange={(value) => setForm((f) => ({ ...f, pickupEnabled: value }))} label="Permitir retirada sem taxa de entrega" />
+            <div className="mt-4"><Input label="Endereço completo de retirada" value={form.pickupAddress} onChange={(e) => setForm((f) => ({ ...f, pickupAddress: e.target.value }))} error={errors.pickupAddress} placeholder="Rua, número, bairro, cidade e referência" /></div>
+            <p className="mt-2 text-[12.5px] text-muted">O cliente paga na loja. Confirme a conclusão do pedido somente após entregar os produtos ao cliente.</p>
           </Card>
           <Card title="Entrega e pedido mínimo">
             <div className="grid gap-4 sm:grid-cols-3">
