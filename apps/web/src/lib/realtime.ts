@@ -52,6 +52,12 @@ export function RealtimeBridge() {
             });
           }
         });
+        es.addEventListener("coins.credited", () => {
+          // The wallet decides what to celebrate (unseen entries), so a credit
+          // that arrives live and one found on the next visit look the same.
+          void qc.invalidateQueries({ queryKey: ["loyalty"] });
+          void qc.invalidateQueries({ queryKey: ["me"] });
+        });
         es.addEventListener("order.created", () => {
           void qc.invalidateQueries({ queryKey: ["orders"] });
         });

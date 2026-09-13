@@ -123,6 +123,8 @@ export function OrderDetailScreen({ id }: { id: string }) {
               <tfoot className="border-t border-line text-[13.5px]">
                 <tr><td colSpan={3} className="px-5 pt-3 text-right text-muted">Subtotal</td><td className="tabular px-5 pt-3 text-right">{formatBRL(order.subtotalCents)}</td></tr>
                 {order.discountCents > 0 && <tr><td colSpan={3} className="px-5 pt-1 text-right text-sale">Descontos</td><td className="tabular px-5 pt-1 text-right text-sale">− {formatBRL(order.discountCents)}</td></tr>}
+                {order.reward && <tr><td colSpan={3} className="px-5 pt-1 text-right font-semibold text-coin-2">Prêmio {order.reward.name} <span className="font-mono text-[11.5px] text-muted">({order.reward.code})</span></td><td className="tabular px-5 pt-1 text-right font-semibold text-coin-2">{order.rewardDiscountCents ? `− ${formatBRL(order.rewardDiscountCents)}` : order.reward.label}</td></tr>}
+                {order.coinsEarned > 0 && <tr><td colSpan={3} className="px-5 pt-1 text-right text-muted">Moedas do cliente</td><td className="tabular px-5 pt-1 text-right font-semibold text-coin-2">+{order.coinsEarned} {order.coinsStatus === "settled" ? "creditadas" : order.coinsStatus === "void" ? "(canceladas)" : "a caminho"}</td></tr>}
                 <tr><td colSpan={3} className="px-5 pt-1 text-right text-muted">{pickup ? "Retirada" : "Entrega"}</td><td className="tabular px-5 pt-1 text-right">{order.deliveryFeeCents ? formatBRL(order.deliveryFeeCents) : "Grátis"}</td></tr>
                 <tr><td colSpan={3} className="px-5 pt-2 pb-4 text-right text-[15px] font-bold">Total</td><td className="tabular px-5 pt-2 pb-4 text-right text-[18px] font-bold">{formatBRL(order.totalCents)}</td></tr>
               </tfoot>

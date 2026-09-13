@@ -4,6 +4,8 @@ import { Providers } from "@/components/providers";
 import { NativeBehavior } from "@/components/native-behavior";
 import { Toaster } from "@/components/ui/toaster";
 import { ClubSheet } from "@/components/club/club-sheet";
+import { CoinBridge } from "@/components/coins/coin-bridge";
+import { CoinCelebration } from "@/components/coins/coin-celebration";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -56,6 +58,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               {children}
               <Toaster />
               <ClubSheet />
+              <CoinCelebration />
+              <CoinBridge />
             </div>
           </div>
         </Providers>

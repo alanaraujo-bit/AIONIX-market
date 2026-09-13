@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { useAdminMutation, useCustomers } from "@/lib/queries";
+import { CoinMark, CustomerCoinsDrawer } from "@/components/screens/loyalty";
 import { Badge, Button, Card, EmptyState, PageHeader, Skeleton, Switch, cn } from "@/components/ui";
 
 export function CustomersScreen() {
@@ -22,6 +23,7 @@ export function CustomersScreen() {
     ({ id, clubMember }: { id: string; clubMember: boolean }) => api(`/admin/customers/${id}`, { method: "PATCH", body: { clubMember } }),
     { invalidate: [["admin", "customers"]], onSuccess: (_, v) => toast.success(v.clubMember ? "Cliente entrou no Clube" : "Cliente removido do Clube") },
   );
+  const [coinsFor, setCoinsFor] = useState<{ id: string; name: string } | null>(null);
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
   const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "2-digit" }).replace(".", "") : "—");
 
@@ -48,6 +50,7 @@ export function CustomersScreen() {
                   <th className="px-5 py-3">Cliente</th>
                   <th className="px-3 py-3">Telefone</th>
                   <th className="px-3 py-3">Clube</th>
+                  <th className="px-3 py-3 text-right">Moedas</th>
                   <th className="px-3 py-3 text-right">Pedidos</th>
                   <th className="px-3 py-3 text-right">Total gasto</th>
                   <th className="px-3 py-3">Último pedido</th>
@@ -80,6 +83,11 @@ export function CustomersScreen() {
                         )}
                       </span>
                     </td>
+                    <td className="px-3 py-3 text-right">
+                      <button type="button" onClick={() => setCoinsFor({ id: c.id, name: c.name })} className="inline-flex items-center gap-1.5 rounded-full bg-coin-soft px-2.5 py-1 text-[12.5px] font-bold text-coin-2 tabular hover:ring-1 hover:ring-coin/40">
+                        <CoinMark size={13} /> {(c.coinBalance ?? 0).toLocaleString("pt-BR")}
+                      </button>
+                    </td>
                     <td className="tabular px-3 py-3 text-right"><Link href={`/pedidos?q=${encodeURIComponent(c.email)}&status=`} className="font-semibold text-brand-2 hover:underline">{c.orders}</Link></td>
                     <td className="tabular px-3 py-3 text-right font-bold">{formatBRL(c.spentCents)}</td>
                     <td className="px-3 py-3 text-ink-2">{fmt(c.lastOrderAt)}</td>
@@ -100,6 +108,7 @@ export function CustomersScreen() {
           </div>
         )}
       </Card>
+      <CustomerCoinsDrawer customer={coinsFor} onClose={() => setCoinsFor(null)} />
     </>
   );
 }

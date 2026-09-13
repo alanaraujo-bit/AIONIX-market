@@ -99,6 +99,7 @@ export interface Customer {
   lastOrderAt: string | null;
   clubMember: boolean;
   clubJoinedAt: string | null;
+  coinBalance?: number;
 }
 
 // ---- Hooks ------------------------------------------------------------------

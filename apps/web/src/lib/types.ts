@@ -35,7 +35,7 @@ export interface OrderListItem extends Order {
 
 export interface MeData {
   user: PublicUser;
-  stats: { orders: number; spentCents: number; savedCents: number; clubSavedCents: number };
+  stats: { orders: number; spentCents: number; savedCents: number; clubSavedCents: number; coinBalance: number; coinPending: number };
 }
 
 export type { Address, Banner, Category, Order, Product };

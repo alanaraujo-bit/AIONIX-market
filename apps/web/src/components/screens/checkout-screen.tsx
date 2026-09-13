@@ -7,6 +7,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AddressForm } from "@/components/address-form";
+import { Coin } from "@/components/coins/coin";
+import { CoinsEarnChip, RewardSummaryRow, VoucherPicker } from "@/components/coins/checkout-rewards";
 import { ProductImage } from "@/components/product/product-image";
 import { Button, Skeleton, cn } from "@/components/ui/primitives";
 import { Screen, TopBar } from "@/components/ui/screen";
@@ -14,7 +16,9 @@ import { Sheet } from "@/components/ui/sheet";
 import { api, ApiError } from "@/lib/api";
 import { useAddresses } from "@/lib/account";
 import { useCart, useHydrated } from "@/lib/cart";
+import { coinLabel, useLoyaltyProgram, useSelectedVoucher } from "@/lib/loyalty";
 import { useCartQuote } from "@/lib/quote";
+import { sfx } from "@/lib/sound";
 import { useSession } from "@/lib/session";
 import { haptic, toast } from "@/lib/toast";
 import type { HomeData } from "@/lib/types";
@@ -70,6 +74,7 @@ export function CheckoutScreen() {
   const [slot, setSlot] = useState("asap");
   const [notes, setNotes] = useState("");
   const [placed, setPlaced] = useState<Order | null>(null);
+  const selectVoucher = useSelectedVoucher((s) => s.select);
 
   useEffect(() => {
     if (!sessionLoading && !user) router.replace("/entrar?next=/checkout");
@@ -98,6 +103,8 @@ export function CheckoutScreen() {
       haptic([10, 40, 10, 40, 30]);
       setPlaced(order);
       clear();
+      selectVoucher(null);
+      void qc.invalidateQueries({ queryKey: ["loyalty"] });
       void qc.invalidateQueries({ queryKey: ["orders"] });
       void qc.invalidateQueries({ queryKey: ["catalog"] });
     },
@@ -121,6 +128,8 @@ export function CheckoutScreen() {
       changeForCents: payment === "cash" && changeCents ? changeCents : undefined,
       deliverySlot: slotLabel,
       notes,
+      // Only send a voucher the server already accepted for this cart.
+      redemptionId: quote.reward?.redemptionId ?? null,
     });
   };
 
@@ -263,6 +272,7 @@ export function CheckoutScreen() {
         </Section>
 
         <Section step={4} title="Resumo">
+          <VoucherPicker quote={quote} className="mb-3" />
           <div className="rounded-[20px] bg-card p-4 shadow-card">
             <ul className="space-y-3">
               {items.map((i) => (
@@ -286,9 +296,11 @@ export function CheckoutScreen() {
             <div className="mt-4 space-y-2 border-t border-line pt-3 text-[14px]">
               <div className="flex justify-between text-muted"><span>Subtotal</span><span className="tabular">{quote ? formatBRL(quote.subtotalCents) : "—"}</span></div>
               {!!quote && quote.discountCents - quote.clubDiscountCents > 0 && <div className="flex justify-between text-sale"><span>Descontos</span><span className="tabular">− {formatBRL(quote.discountCents - quote.clubDiscountCents)}</span></div>}
+              <RewardSummaryRow quote={quote} />
               {!!quote?.clubDiscountCents && <div className="flex justify-between font-semibold text-club"><span className="flex items-center gap-1.5"><Crown className="size-3.5 text-club-gold" strokeWidth={2.8} fill="currentColor" /> Preço de Clube</span><span className="tabular">− {formatBRL(quote.clubDiscountCents)}</span></div>}
               <div className="flex justify-between text-muted"><span>{pickup ? "Retirada na loja" : "Entrega"}</span><span className={cn("tabular", quote?.deliveryFeeCents === 0 && "font-semibold text-brand-2")}>{quote ? (quote.deliveryFeeCents ? formatBRL(quote.deliveryFeeCents) : "Grátis") : "—"}</span></div>
               <div className="flex items-baseline justify-between pt-1"><span className="text-[15px] font-bold">Total</span><span className="tabular font-display text-[22px] font-bold tracking-[-0.02em]">{quote ? formatBRL(quote.totalCents) : "—"}</span></div>
+              <CoinsEarnChip quote={quote} className="pt-1" />
             </div>
           </div>
         </Section>
@@ -321,6 +333,39 @@ export function CheckoutScreen() {
   );
 }
 
+function SuccessCoins({ order }: { order: Order }) {
+  const program = useLoyaltyProgram();
+  const p = program.data;
+  useEffect(() => {
+    if (order.coinsEarned > 0) {
+      const t = setTimeout(() => sfx.coin(), 900);
+      return () => clearTimeout(t);
+    }
+  }, [order.coinsEarned]);
+  if (!p?.enabled || order.coinsEarned <= 0) return null;
+  const settledNow = order.coinsStatus === "settled";
+  return (
+    <motion.div
+      initial={{ y: 16, opacity: 0, scale: 0.9 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
+      transition={{ delay: 0.75, type: "spring", stiffness: 320, damping: 20 }}
+      className="mt-6 flex items-center gap-3 rounded-[20px] bg-white/12 px-4 py-3 text-left ring-1 ring-white/20"
+    >
+      <motion.span initial={{ rotateY: 0 }} animate={{ rotateY: 720 }} transition={{ delay: 0.8, duration: 1.1, ease: [0.16, 1, 0.3, 1] }} className="preserve-3d">
+        <Coin size={36} />
+      </motion.span>
+      <span className="min-w-0">
+        <span className="block text-[15px] font-extrabold">
+          +{coinLabel(order.coinsEarned, p)} {settledNow ? "na sua carteira" : "a caminho"}
+        </span>
+        <span className="block text-[12.5px] text-white/70">
+          {settledNow ? "Já dá para trocar por prêmios." : p.awardOn === "confirmed" ? "Liberadas quando a loja confirmar." : "Liberadas assim que o pedido chegar."}
+        </span>
+      </span>
+    </motion.div>
+  );
+}
+
 function SuccessScreen({ order }: { order: Order }) {
   const router = useRouter();
   return (
@@ -337,6 +382,7 @@ function SuccessScreen({ order }: { order: Order }) {
           <br />
           Você acompanha cada etapa em tempo real.
         </p>
+        <SuccessCoins order={order} />
       </motion.div>
       <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="mt-9 flex w-full flex-col gap-3">
         <Button size="lg" block className="!bg-white !text-brand" onClick={() => router.replace(`/pedidos/${order.id}`)}>

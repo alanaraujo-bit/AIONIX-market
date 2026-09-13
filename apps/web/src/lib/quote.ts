@@ -5,6 +5,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "./api";
 import { useCart, useHydrated } from "./cart";
+import { useSelectedVoucher } from "./loyalty";
+import { useSession } from "./session";
 
 /** Authoritative server pricing for the current cart, debounced while the user edits quantities. */
 export function useCartQuote(fulfillmentMethod: "delivery" | "pickup" = "delivery") {
@@ -13,6 +15,10 @@ export function useCartQuote(fulfillmentMethod: "delivery" | "pickup" = "deliver
   const syncWithQuote = useCart((s) => s.syncWithQuote);
   const key = useMemo(() => items.map((i) => `${i.productId}:${i.quantity}`).sort().join(","), [items]);
   const [debounced, setDebounced] = useState(key);
+  const { user } = useSession();
+  // Vouchers only mean something for a signed-in shopper; the server ignores them otherwise.
+  const selectedVoucher = useSelectedVoucher((s) => s.redemptionId);
+  const redemptionId = user ? selectedVoucher : null;
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(key), 350);
@@ -20,7 +26,7 @@ export function useCartQuote(fulfillmentMethod: "delivery" | "pickup" = "deliver
   }, [key]);
 
   const q = useQuery({
-    queryKey: ["quote", debounced, fulfillmentMethod],
+    queryKey: ["quote", debounced, fulfillmentMethod, redemptionId],
     enabled: hydrated && debounced.length > 0,
     placeholderData: keepPreviousData,
     staleTime: 15_000,
@@ -28,6 +34,7 @@ export function useCartQuote(fulfillmentMethod: "delivery" | "pickup" = "deliver
       api<Quote>("/cart/quote", {
         body: {
           fulfillmentMethod,
+          redemptionId,
           items: debounced.split(",").map((pair) => {
             const [productId, quantity] = pair.split(":");
             return { productId: productId!, quantity: Number(quantity) };

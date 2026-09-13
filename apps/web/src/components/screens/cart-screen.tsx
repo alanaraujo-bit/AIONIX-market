@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useAnimation, type PanInfo } from "motion/reac
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useClubSheet } from "@/components/club/club-sheet";
+import { CoinsEarnChip, RewardSummaryRow, VoucherPicker } from "@/components/coins/checkout-rewards";
 import { Price } from "@/components/product/price";
 import { ProductImage } from "@/components/product/product-image";
 import { Button, EmptyState, Pressable, Skeleton, cn } from "@/components/ui/primitives";
@@ -132,7 +133,7 @@ export function CartScreen() {
   const { quote, loading } = useCartQuote();
   const count = cartCount(items);
   const localTotal = cartTotal(items);
-  const savings = quote ? quote.discountCents : cartSavings(items);
+  const savings = quote ? quote.discountCents + quote.rewardDiscountCents : cartSavings(items);
   const clubSavings = quote?.clubDiscountCents ?? 0;
   const clubPotential = !member ? (quote?.clubPotentialCents ?? 0) : 0;
 
@@ -263,10 +264,13 @@ export function CartScreen() {
           )}
         </AnimatePresence>
 
+        <VoucherPicker quote={quote} className="mt-3" />
+
         <div className="mt-3 space-y-2.5 rounded-[22px] bg-card p-4 shadow-card">
           <Row label="Subtotal" value={formatBRL(quote?.subtotalCents ?? localTotal + savings)} loading={!quote} />
-          {savings - clubSavings > 0 && <Row label="Descontos" value={`− ${formatBRL(savings - clubSavings)}`} tone="sale" loading={!quote} />}
+          {savings - clubSavings - (quote?.rewardDiscountCents ?? 0) > 0 && <Row label="Descontos" value={`− ${formatBRL(savings - clubSavings - (quote?.rewardDiscountCents ?? 0))}`} tone="sale" loading={!quote} />}
           {clubSavings > 0 && <Row label="Preço de Clube" value={`− ${formatBRL(clubSavings)}`} tone="club" loading={!quote} />}
+          <RewardSummaryRow quote={quote} />
           <Row
             label="Entrega"
             value={quote ? (quote.deliveryFeeCents === 0 ? "Grátis" : formatBRL(quote.deliveryFeeCents)) : ""}
@@ -289,6 +293,7 @@ export function CartScreen() {
               <Sparkles className="size-3.5" /> Você está economizando {formatBRL(savings)} nesta compra
             </p>
           )}
+          <CoinsEarnChip quote={quote} />
           {belowMinimum && (
             <p className="rounded-xl bg-citrus-soft px-3 py-2 text-[12.5px] font-semibold text-[#8a5a00]">
               Pedido mínimo de {formatBRL(minimum)}. Faltam {formatBRL(minimum - net)}.

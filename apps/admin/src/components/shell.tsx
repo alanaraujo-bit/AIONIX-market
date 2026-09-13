@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, ChevronRight, ImageIcon, LayoutDashboard, Leaf, LogOut, Megaphone, Menu, Package, Receipt, Settings, Tags, Users, X } from "lucide-react";
+import { Boxes, Coins, ChevronRight, ImageIcon, LayoutDashboard, Leaf, LogOut, Megaphone, Menu, Package, Receipt, Settings, Tags, Users, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -20,6 +20,7 @@ const NAV = [
   { href: "/midia", label: "Mídia", icon: ImageIcon },
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/conquistas", label: "Conquistas", icon: Tags },
+  { href: "/fidelidade", label: "Fidelidade", icon: Coins },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 

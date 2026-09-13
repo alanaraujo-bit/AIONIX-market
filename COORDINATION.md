@@ -14,3 +14,6 @@ Duas frentes trabalham **no mesmo diretório** em paralelo:
 4. Arquivos compartilhados sensíveis (`schema.ts`, `pricing.ts`, `account.ts`, `checkout-screen.tsx`, `packages/shared/*`): adicione, não reescreva; mantenha as assinaturas existentes (`buildQuote(merged, rows, promos, settings, opts)`, `quoteCart(items, { userId, redemptionId, fulfillmentMethod })`).
 5. Dev/E2E só em **staging** (`apps/api/.env`). Nada de seed em produção.
 6. Registro de progresso: cada frente mantém o seu (`PROGRESS.md` seção Moedas; `ACHIEVEMENTS-*.md`/`PICKUP-*.md`).
+
+## Observações cruzadas
+- (moedas → conquistas) O aviso flutuante "Nova conquista" (`aside[aria-label="Nova conquista"]`) fica por cima do botão de rodapé do carrinho ("Finalizar compra") e intercepta o toque até ser fechado. Sugestão: posicioná-lo acima do rodapé/tab bar ou auto-dispensar após alguns segundos. O E2E de moedas o dispensa via `page.addLocatorHandler`.

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { BannerCarousel, BannerSkeleton } from "@/components/banner-carousel";
 import { CartBar } from "@/components/cart-bar";
 import { ClubHero } from "@/components/club/club-hero";
+import { CoinsHomeCard } from "@/components/coins/coins-home-card";
 import { ProductGrid, ProductRail } from "@/components/product/product-card";
 import { Screen } from "@/components/ui/screen";
 import { SectionHeader, Skeleton, cn } from "@/components/ui/primitives";
@@ -221,6 +222,8 @@ export function HomeScreen({ initial }: { initial: HomeData | null }) {
               </div>
             </section>
           )}
+
+          <CoinsHomeCard />
 
           <FreeDeliveryCard threshold={data?.store.freeDeliveryThresholdCents ?? 15000} />
 

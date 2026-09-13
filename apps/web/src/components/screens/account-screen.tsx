@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useClubSheet } from "@/components/club/club-sheet";
+import { Coin } from "@/components/coins/coin";
 import { Field, fieldErrors } from "@/components/ui/field";
 import { Button, Skeleton } from "@/components/ui/primitives";
 import { LargeTitle, Screen } from "@/components/ui/screen";
@@ -149,6 +150,21 @@ export function AccountScreen() {
             <span className="shrink-0 rounded-full bg-club px-3 py-1.5 text-[12px] font-extrabold text-white">Saiba mais</span>
           </motion.button>
         )}
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
+          <Link href="/moedas" className="coin-surface grain flex items-center gap-3.5 rounded-[24px] p-4 active:scale-[0.99] transition-transform">
+            <Coin size={44} spin />
+            <span className="min-w-0 flex-1">
+              <span className="block text-[11px] font-bold tracking-[0.12em] text-coin-ink/70 uppercase">Carteira de moedas</span>
+              <span className="mt-0.5 block font-display text-[20px] leading-tight font-extrabold tracking-[-0.02em] text-coin-ink tabular">
+                {stats ? stats.coinBalance.toLocaleString("pt-BR") : "…"}
+                {!!stats?.coinPending && <span className="ml-1.5 text-[12.5px] font-bold text-coin-ink/60">+{stats.coinPending.toLocaleString("pt-BR")} a caminho</span>}
+              </span>
+              <span className="block text-[12px] font-medium text-coin-ink/70">Trocar por descontos, frete grátis e brindes</span>
+            </span>
+            <ChevronRight className="size-5 shrink-0 text-coin-ink/60" />
+          </Link>
+        </motion.div>
 
         <section className="grid grid-cols-3 gap-3">
           {[

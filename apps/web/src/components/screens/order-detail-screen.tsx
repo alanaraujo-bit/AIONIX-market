@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { OrderTimeline, StatusPill } from "@/components/order-status";
+import { Coin } from "@/components/coins/coin";
 import { ProductImage } from "@/components/product/product-image";
 import { Button, EmptyState, Skeleton, cn } from "@/components/ui/primitives";
 import { Screen, TopBar } from "@/components/ui/screen";
@@ -125,6 +126,20 @@ export function OrderDetailScreen({ id }: { id: string }) {
             {!done && <span aria-hidden className="absolute -right-10 -bottom-14 size-44 rounded-full bg-white/10" />}
           </section>
 
+          {order.coinsEarned > 0 && order.coinsStatus !== "void" && (
+            <Link href="/moedas" className={cn("flex items-center gap-3 rounded-[20px] p-4 active:scale-[0.99] transition-transform", order.coinsStatus === "settled" ? "coin-surface grain" : "bg-coin-soft")}>
+              <Coin size={36} spin={order.coinsStatus === "settled"} />
+              <span className="min-w-0 flex-1 text-coin-ink">
+                <span className="block text-[15px] font-extrabold tabular">
+                  {order.coinsStatus === "settled" ? `+${order.coinsEarned.toLocaleString("pt-BR")} moedas creditadas` : `+${order.coinsEarned.toLocaleString("pt-BR")} moedas a caminho`}
+                </span>
+                <span className="block text-[12.5px] text-coin-ink/70">
+                  {order.coinsStatus === "settled" ? "Já estão na sua carteira." : "Creditadas quando o pedido for concluído."}
+                </span>
+              </span>
+            </Link>
+          )}
+
           <section className="rounded-[22px] bg-card p-5 shadow-card">
             <h2 className="mb-5 text-[13px] font-bold tracking-[0.04em] text-muted uppercase">Acompanhamento</h2>
             <OrderTimeline status={order.status} events={order.events} fulfillmentMethod={order.fulfillmentMethod} />
@@ -139,7 +154,7 @@ export function OrderDetailScreen({ id }: { id: string }) {
                     <ProductImage src={i.imageUrl} alt="" sizes="48px" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-semibold">{i.name}</span>
+                    <span className="block truncate text-[14px] font-semibold">{i.name}{i.viaReward && <span className="ml-1.5 rounded-full bg-coin-soft px-1.5 py-0.5 align-middle text-[10.5px] font-extrabold text-coin-2">PRÊMIO</span>}</span>
                     <span className="block text-[12.5px] text-muted">{i.quantity} × {formatBRL(i.unitPriceCents)}{i.unitLabel ? ` · ${i.unitLabel}` : ""}</span>
                   </span>
                   <span className="tabular text-[14px] font-bold">{formatBRL(i.totalCents)}</span>
@@ -149,6 +164,12 @@ export function OrderDetailScreen({ id }: { id: string }) {
             <div className="mt-4 space-y-2 border-t border-line pt-3 text-[14px]">
               <div className="flex justify-between text-muted"><span>Subtotal</span><span className="tabular">{formatBRL(order.subtotalCents)}</span></div>
               {order.discountCents > 0 && <div className="flex justify-between text-sale"><span>Descontos</span><span className="tabular">− {formatBRL(order.discountCents)}</span></div>}
+              {order.reward && (
+                <div className="flex justify-between font-semibold text-coin-2">
+                  <span className="flex min-w-0 items-center gap-1.5"><Coin size={15} /> <span className="truncate">{order.reward.name}</span></span>
+                  <span className="tabular shrink-0">{order.rewardDiscountCents ? `− ${formatBRL(order.rewardDiscountCents)}` : order.reward.label}</span>
+                </div>
+              )}
               <div className="flex justify-between text-muted"><span>{order.fulfillmentMethod === "pickup" ? "Retirada na loja" : "Entrega"}</span><span className="tabular">{order.deliveryFeeCents ? formatBRL(order.deliveryFeeCents) : "Grátis"}</span></div>
               <div className="flex items-baseline justify-between pt-1"><span className="text-[15px] font-bold">Total</span><span className="tabular font-display text-[22px] font-bold tracking-[-0.02em]">{formatBRL(order.totalCents)}</span></div>
             </div>

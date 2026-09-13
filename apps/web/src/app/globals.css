@@ -24,6 +24,12 @@
   --color-club-soft: #efe9fb;
   --color-club-gold: #e4b54a;
   --color-club-gold-2: #f6d98a;
+  /* Moedas: warm amber/copper — playful, distinct from club plum and brand green. */
+  --color-coin: #d98a12;
+  --color-coin-2: #b86f06;
+  --color-coin-3: #f5b03a;
+  --color-coin-soft: #fff1d6;
+  --color-coin-ink: #4a2e05;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-bricolage), var(--font-inter), ui-sans-serif, sans-serif;
@@ -39,6 +45,8 @@
   --animate-pop: pop 0.35s var(--ease-spring);
   --animate-sheen: sheen 3.2s var(--ease-out-expo) infinite;
   --animate-twinkle: twinkle 2.4s ease-in-out infinite;
+  --animate-coin-spin: coin-spin 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  --animate-float: float 3.4s ease-in-out infinite;
 
   @keyframes shimmer {
     to {
@@ -63,6 +71,23 @@
     50% {
       opacity: 1;
       transform: scale(1.15) rotate(12deg);
+    }
+  }
+  @keyframes coin-spin {
+    0% {
+      transform: rotateY(0deg);
+    }
+    100% {
+      transform: rotateY(360deg);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
     }
   }
   @keyframes pop {
@@ -211,6 +236,44 @@ button {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Moedas surfaces: amber gradient with soft light sweep. */
+.coin-surface {
+  position: relative;
+  overflow: hidden;
+  color: #3b2404;
+  background:
+    radial-gradient(110% 80% at 100% 0%, rgb(255 255 255 / 0.55) 0%, transparent 55%),
+    radial-gradient(80% 70% at 0% 100%, rgb(184 111 6 / 0.35) 0%, transparent 60%),
+    linear-gradient(150deg, #ffd66b 0%, #f5b03a 50%, #e8941a 100%);
+}
+.coin-surface::before {
+  content: "";
+  position: absolute;
+  inset: -20% 0;
+  width: 38%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  animation: var(--animate-sheen);
+}
+.coin-surface-dark {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgb(245 176 58 / 0.35) 0%, transparent 55%),
+    radial-gradient(80% 70% at 0% 100%, rgb(217 138 18 / 0.25) 0%, transparent 60%),
+    linear-gradient(150deg, #2a1a05 0%, #3d2707 55%, #1d1203 100%);
+}
+.coin-gold-text {
+  background: linear-gradient(95deg, #ffe08a 0%, #f5b03a 45%, #ffd66b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
 }
 
 .line-clamp-2 {
