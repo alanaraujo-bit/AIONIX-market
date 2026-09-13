@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   applicationName: "AIONIX Market",
   appleWebApp: { capable: true, title: "AIONIX", statusBarStyle: "default" },
   formatDetection: { telephone: false, email: false, address: false },
+  // Next only emits the standard `mobile-web-app-capable`; iOS < 17.4 still reads the Apple-prefixed tag.
+  other: { "apple-mobile-web-app-capable": "yes" },
   icons: {
     icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],

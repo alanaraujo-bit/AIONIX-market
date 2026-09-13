@@ -1,6 +1,6 @@
 "use client";
 
-import { canTransition, formatBRL, formatOrderNumber, nextOrderStatus, ORDER_FLOW, ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, type OrderStatus } from "@aionix/shared";
+import { formatBRL, formatOrderNumber, nextOrderStatus, ORDER_FLOW, ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, type OrderStatus } from "@aionix/shared";
 import { ArrowRight, Clock3, MapPin, Phone, Printer, User, Wallet, XCircle } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api";
@@ -81,9 +81,11 @@ export function OrderDetailScreen({ id }: { id: string }) {
             {!final && (
               <div className="mt-4 flex flex-wrap items-end gap-2">
                 <Input label="Observação para o cliente (opcional)" value={note} onChange={(e) => setNote(e.target.value.slice(0, 200))} placeholder="Ex.: Substituímos o leite por outra marca" className="min-w-[260px] flex-1" />
-                {ORDER_FLOW.filter((s) => s !== next && canTransition(order.status, s)).map((s) => (
-                  <Button key={s} variant="outline" onClick={() => update.mutate({ status: s, note: note || undefined })}>{ORDER_STATUS_LABEL[s]}</Button>
-                ))}
+                {next && (
+                  <p className="pb-2.5 text-[12.5px] text-muted">
+                    A observação é enviada junto com <strong className="font-semibold text-ink">{ORDER_STATUS_LABEL[next]}</strong>.
+                  </p>
+                )}
               </div>
             )}
           </Card>

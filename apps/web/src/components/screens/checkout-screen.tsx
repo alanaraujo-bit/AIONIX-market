@@ -1,7 +1,7 @@
 "use client";
 
 import { formatBRL, PAYMENT_METHOD_LABEL, type Address, type CheckoutInput, type Order, type PaymentMethod } from "@aionix/shared";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Banknote, Check, ChevronRight, Clock3, CreditCard, MapPin, Plus, QrCode, ShieldCheck } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,7 @@ import { useCart, useHydrated } from "@/lib/cart";
 import { useCartQuote } from "@/lib/quote";
 import { useSession } from "@/lib/session";
 import { haptic, toast } from "@/lib/toast";
+import type { HomeData } from "@/lib/types";
 
 const PAYMENTS: { id: PaymentMethod; icon: React.ReactNode; hint: string }[] = [
   { id: "pix", icon: <QrCode className="size-5" />, hint: "QR Code apresentado pelo entregador" },
@@ -79,7 +80,14 @@ export function CheckoutScreen() {
   }, [addresses.data, addressId]);
 
   const address = addresses.data?.find((a) => a.id === addressId) ?? null;
-  const slots = useMemo(() => buildSlots(45), []);
+  const store = useQuery({
+    queryKey: ["catalog", "home"],
+    queryFn: () => api<HomeData>("/catalog/home"),
+    staleTime: 30_000,
+    select: (d) => d.store,
+  });
+  const eta = store.data?.etaMinutes ?? 45;
+  const slots = useMemo(() => buildSlots(eta), [eta]);
   const slotLabel = slots.find((s) => s.id === slot)?.label ?? slot;
 
   const place = useMutation({
