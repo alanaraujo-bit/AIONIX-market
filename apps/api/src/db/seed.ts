@@ -50,7 +50,7 @@ async function main() {
   console.log(`→ products (${SEED_PRODUCTS.length})`);
   const productIdBySlug = new Map<string, string>();
   for (const p of SEED_PRODUCTS) {
-    const slug = slugify(p.name);
+    const slug = p.slug ?? slugify(p.name);
     const categoryId = catBySlug.get(p.category);
     if (!categoryId) throw new Error(`unknown category ${p.category} for ${p.name}`);
     const [existing] = await db.select().from(schema.products).where(eq(schema.products.slug, slug));

@@ -11,6 +11,8 @@ export interface SeedCategory {
 
 export interface SeedProduct {
   name: string;
+  /** Stable identity for upserts when the display name changes (defaults to slugify(name)). */
+  slug?: string;
   brand?: string;
   category: string;
   price: number; // BRL
@@ -62,7 +64,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   { name: "Abacaxi Pérola", category: "hortifruti", price: 7.99, unitLabel: "unidade", stock: 50, tags: ["fruta", "abacaxi"], image: img("hortifruti", 13) },
   { name: "Manga Palmer", category: "hortifruti", price: 6.99, unit: "kg", unitLabel: "kg", stock: 65, tags: ["fruta", "manga"], image: img("hortifruti", 14) },
   { name: "Alho Nacional", category: "hortifruti", price: 3.29, unitLabel: "cabeça", stock: 130, tags: ["tempero", "alho"], image: img("hortifruti", 15) },
-  { name: "Pimentão Sortido", category: "hortifruti", price: 9.49, unit: "kg", unitLabel: "kg", stock: 55, tags: ["legume", "pimentão"], image: img("hortifruti", 16) },
+  { name: "Pimentão Vermelho", slug: "pimentao-sortido", category: "hortifruti", price: 9.49, unit: "kg", unitLabel: "kg", stock: 55, tags: ["legume", "pimentão"], image: img("hortifruti", 16) },
 
   // ---- Açougue & ovos ---------------------------------------------------
   { name: "Ovos Brancos Grandes", category: "acougue", price: 12.9, compareAt: 14.9, unitLabel: "dúzia", stock: 90, featured: true, tags: ["ovos"], image: img("acougue", 0) },
