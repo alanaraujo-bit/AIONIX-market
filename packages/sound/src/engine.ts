@@ -253,9 +253,11 @@ export class SoundEngine {
         return false;
       }
       const now = ctx.currentTime;
-      // Micro sounds may repeat quickly (tapping "+"), news never doubles (local action + realtime echo).
+      // Order news never doubles (local action + its realtime echo); everything
+      // else may repeat quickly — adding two products in a row rings twice.
+      const news = def.category === "pedidos" || def.category === "painel";
       const prev = this.lastByName.get(name);
-      if (prev !== undefined && now - prev < (def.priority >= 3 ? 1.5 : 0.045)) return false;
+      if (prev !== undefined && now - prev < (news ? 1.5 : 0.045)) return false;
       const last = this.last;
       if (last && last.name !== name && now - last.at < 0.12) {
         if (def.priority <= last.prio) return false;

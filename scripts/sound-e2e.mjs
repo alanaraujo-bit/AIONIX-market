@@ -79,6 +79,18 @@ try {
   await cp.waitForTimeout(250);
   await cp.getByRole("button", { name: "Remover" }).first().click();
   await expectHeard(cp, "removeItem", "last unit removed");
+  // Two different products back to back: both must ring.
+  await cp.waitForTimeout(250);
+  await clearHeard(cp);
+  // Grab both cards first: once the first product is in the bag its card grows its own "+" button.
+  const [first, second] = await cp.getByRole("button", { name: "Adicionar ao carrinho" }).elementHandles();
+  await first.click();
+  await cp.waitForTimeout(150);
+  await second.click();
+  await cp.waitForTimeout(300);
+  const twice = (await heard(cp)).filter((n) => n === "addToCart").length;
+  assert.equal(twice, 2, `two quick adds must ring twice, heard [${(await heard(cp)).join(", ")}]`);
+  console.log("  ♪ two products in a row → addToCart ×2");
 
   step("app: checkout signature + panel counter bell");
   const p = (await (await fetch(`${API}/products?pageSize=30`)).json()).items.find((x) => x.stock > 10 && x.finalPriceCents >= 3500);
