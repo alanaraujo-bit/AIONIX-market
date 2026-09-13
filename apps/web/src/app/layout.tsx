@@ -14,6 +14,8 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://aionix-market.vercel.app"),
+  manifest: "/manifest.webmanifest",
   title: { default: "AIONIX Market", template: "%s · AIONIX Market" },
   description: "Seu supermercado premium no bolso. Hortifruti fresco, ofertas do dia e entrega rápida.",
   applicationName: "AIONIX Market",
